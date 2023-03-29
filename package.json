@@ -11,6 +11,7 @@
   "license": "GPLv3",
   "type": "module",
   "dependencies": {
-    "whatframework": "^0.0.3-b"
+    "kamtube": "^0.1.10",
+    "whatframework": "^0.0.6-b"
   }
 }

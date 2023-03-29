@@ -1,3 +1,5 @@
+import { commandHandler } from "./commands.js";
+
 class Entrypoint {
     async chatHandlers(bot, message, context, group, metadata) {
         if (message === "test") {
@@ -7,9 +9,7 @@ class Entrypoint {
 
     async commandHandlers(bot, message, context, group, metadata) {
         // In this case, message can be also command to diferentiate the methods.
-        if (message === "test") {
-            bot.replyText(context, "YEEEEEEy");
-        }
+        commandHandler(bot, message, context, group, metadata);
     }
 }
 
