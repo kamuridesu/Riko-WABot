@@ -1,5 +1,6 @@
 /* eslint-disable no-fallthrough */
 import * as commands from './commandsImpl.js';
+import * as diversao from "./diversao.js";
 
 /* TODOS OS COMANDOS DEVEM ESTAR NESTE ARQUIVO, MENOS OS COMANDOS SEM PREFIXO.
 CASO PRECISE DE FUNÇÕES GRANDES, SIGA A BOA PRÁTICA E ADICIONE ELAS NO ARQUIVO commandsImpl.js,
@@ -25,6 +26,18 @@ async function commandHandler(bot, message, context, group, metadata) {
         case "start":
             // comment="retorna uma apresentação do bot"
             return await commands.start(context, bot);
+
+        case "ajuda":
+            // comment="retorna um menu de comandos, envie um comando para saber mais sobre o mesmo, ex: /ajuda ajuda"
+        case "menu":
+        // comment="retorna um menu de comandos, envie um comando para saber mais sobre o mesmo, ex: /menu menu"
+        case "todoscmd": {
+            // comment="retorna um menu de comandos, envie um comando para saber mais sobre o mesmo, ex: /todos_cmd todos_cmd"
+            return await commands.help(context, bot, args);
+        }
+
+        case "bug":
+            return await commands.bug(context, bot, metadata, args);
 
         case "test":
             // comment="retorna um teste"
@@ -61,32 +74,37 @@ async function commandHandler(bot, message, context, group, metadata) {
 
         case 'sticker': {
             // comment="cria sticker"
-            return await commands.createSticker(context, bot, args);
+            return await diversao.makeSticker(context, bot, args);
         }
 
         case "gado": {
             // comment="mostra seu nivel de gado"
-            return await commands.nivelGado(context, bot);
+            return await diversao.nivelGado(context, bot);
         }
 
         case "slot": {
-            // comment="joga um slot"
-            return await commands.slot(context, bot);
+            // comment="joga uma slot machine"
+            return await diversao.slot(context, bot);
         }
 
         case "gay": {
             // comment="mostra seu nivel de gay"
-            return await commands.nivelGay(context, bot);
+            return await diversao.nivelGay(context, bot);
         }
 
         case "chance": {
             // comment="mostra uma chance de algo, ex: chance de eu ganhar na loteria"
-            return await commands.chanceDe(context, bot, args);
+            return await diversao.chanceDe(context, bot, args);
         }
 
         case "perc": {
-            // comment="mostra uma porcentagem, ex: perc hombre"
-            return await commands.perc(context, bot, args);
+            // comment="mostra uma porcentagem, ex: perc maacho"
+            return await diversao.perc(context, bot, args);
+        }
+
+        case "casal": {
+            // comment="Escolhe um casal aleatório no grupo"
+            return await diversao.casal(context, bot, group)
         }
 
 

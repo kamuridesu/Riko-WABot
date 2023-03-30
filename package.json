@@ -11,7 +11,8 @@
   "license": "GPLv3",
   "type": "module",
   "dependencies": {
-    "whatframework": "^0.0.7-b"
+    "link-preview-js": "^3.0.4",
+    "whatframework": "^0.0.11-b"
   },
   "devDependencies": {
     "kamtube": "^0.1.13"

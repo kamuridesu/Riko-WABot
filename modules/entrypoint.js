@@ -1,9 +1,13 @@
 import { commandHandler } from "./commands.js";
+import path from 'path';
 
 class Entrypoint {
     prefix = "/";
-    botNumber = "559885718484";
-    ownerNumber = "559881953154";
+    ownerNumber = process.env.OWNER;
+    botNumber = process.env.BOT;
+    commandsFilename = "commands.js";
+    botName = "Riko-chan";
+    language = "pt-br";
 
     async chatHandlers(bot, message, context, group, metadata) {
         if (message === "test") {
