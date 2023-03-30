@@ -1,5 +1,5 @@
-import KamTube from 'kamtube';
-import { createStickerFromMedia } from 'whatframework/src/libs/sticker.js';
+import { KamTube } from 'kamtube';
+import { createStickerFromMedia } from 'whatframework/src/libs/sticker.js'
 
 
 async function start(context, bot) {
@@ -16,13 +16,12 @@ async function start(context, bot) {
 //     return await bot.replyText(context, "Bug reportado com sucesso! O abuso desse comando pode ser punido!");
 // }
 
-async function download(context, bot, args, video_audio) {
-    let video_or_audio = video_audio ? "audio" : "video";
+async function download(context, bot, args, video_audio="mixed") {
   
     if (args.length < 1) {
       return await bot.replyText(
         context,
-        `Por favor, escolha um ${video_or_audio} para baixar!`
+        `Por favor, escolha um ${video_or_audio == "mixed" ? "video": "audio"} para baixar!`
       );
     }
   
@@ -44,7 +43,7 @@ async function download(context, bot, args, video_audio) {
     let video = null;
   
     try {
-      video = await youtube.download(argument, video_audio);
+      video = await youtube.download(argument, video_audio, video_audio == "audio" ? undefined : "360");
     } catch (e) {
       console.log(e);
       return await bot.replyText(context, "Houve um erro ao baixar");

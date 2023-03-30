@@ -2,7 +2,7 @@
   "name": "riko-wabot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "whatframework",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,7 +11,9 @@
   "license": "GPLv3",
   "type": "module",
   "dependencies": {
-    "kamtube": "^0.1.10",
-    "whatframework": "^0.0.6-b"
+    "whatframework": "^0.0.7-b"
+  },
+  "devDependencies": {
+    "kamtube": "^0.1.13"
   }
 }

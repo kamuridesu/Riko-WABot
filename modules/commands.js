@@ -41,7 +41,7 @@ async function commandHandler(bot, message, context, group, metadata) {
 
         case "video": {
             // comment="envia um vídeo a partir de um link ou pequisa no youtube, ex: !video link_do_video"
-            return await commands.download(context, bot, args, "360");
+            return await commands.download(context, bot, args);
         }
 
         case "image": {

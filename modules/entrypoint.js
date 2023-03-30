@@ -1,6 +1,10 @@
 import { commandHandler } from "./commands.js";
 
 class Entrypoint {
+    prefix = "/";
+    botNumber = "559885718484";
+    ownerNumber = "559881953154";
+
     async chatHandlers(bot, message, context, group, metadata) {
         if (message === "test") {
             bot.replyText(context, "YEEEEEEy");
