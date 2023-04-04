@@ -1,12 +1,10 @@
-import { KamTube } from 'kamtube';
-import { Bot } from 'whatframework/src/modules/bot.js';
-import Help from 'whatframework/libs/help.js'
-
+import { KamTube } from '@kamuridesu/kamtube';
+import Letras from '@kamuridesu/simplelyrics';
+import Help from '@kamuridesu/whatframework/dist/libs/help.js'
 
 async function start(context, bot) {
     return await bot.replyText(context, "Hey! Sou um simples bot, porém ainda estou em desevolvimento!\n\nCaso queira me apoiar no Patreon: https://www.patreon.com/kamuridesu\n\nO meu template: https://github.com/kamuridesu/WhatFramework");
 }
-
 
 async function help(data, bot, args) {
     const helper = new Help(bot);
@@ -19,14 +17,6 @@ async function help(data, bot, args) {
     return await bot.replyText(data, await helper.getCommandsByCategory());
 }
 
-/**
- * 
- * @param {*} context 
- * @param {Bot} bot 
- * @param {*} metadata 
- * @param {*} args 
- * @returns 
- */
 async function bug(context, bot, metadata, args) {
     if (args.length < 1) {
         return await bot.replyText(context, "Por favor, digite o bug que você está reportando!");
@@ -37,53 +27,58 @@ async function bug(context, bot, metadata, args) {
     return await bot.replyText(context, "Bug reportado com sucesso! O abuso desse comando pode ser punido!");
 }
 
-async function download(context, bot, args, video_audio="mixed") {
-  
+async function download(context, bot, args, video_audio = "mixed") {
+
     if (args.length < 1) {
-      return await bot.replyText(
-        context,
-        `Por favor, escolha um ${video_or_audio == "mixed" ? "video": "audio"} para baixar!`
-      );
+        return await bot.replyText(
+            context,
+            `Por favor, escolha um ${video_or_audio == "mixed" ? "video" : "audio"} para baixar!`
+        );
     }
-  
+
     const youtube = new KamTube();
     let argument = args.join(" ");
-  
+
     const regex = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
     if (!regex.test(argument)) {
-      try {
-        let c = 0;
-        do {
-            argument = (await youtube.search(argument))[c];
-            c++;
-        } while (argument.type == "channel");
-        argument = argument.videoId;
-      } catch (e) {
-        return await bot.replyText(context, "Houve um erro ao processar!");
-      }
+        try {
+            let c = 0;
+            const results = (await youtube.search(argument));
+            do {
+                argument = results[c];
+                c++;
+                if (c == results.length) {
+                    return await bot.replyText("Erro! Nenhum vídeo encontrado!")
+                }
+            } while (argument.type == "channel" || argument.type == "playlist");
+            argument = argument.videoId;
+        } catch (e) {
+            console.log(e);
+            return await bot.replyText(context, "Houve um erro ao processar!");
+        }
     }
-  
+
     await bot.replyText(context, "Aguarde enquanto eu baixo...");
-  
+
     let video = null;
-  
+
     try {
-      video = await youtube.download(argument, video_audio, video_audio == "audio" ? undefined : "360");
+        video = await youtube.download(argument, video_audio, video_audio == "audio" ? undefined : "360");
     } catch (e) {
-      console.log(e);
-      return await bot.replyText(context, "Houve um erro ao baixar");
+        console.log(e);
+        return await bot.replyText(context, "Houve um erro ao baixar");
     }
-  
+
     console.log("Video downloaded!");
-  
+
     if (video != null) {
-      const mediaType = video_audio != "audio" ? "video" : "audio";
-      await bot.replyMedia(context, video.data, mediaType, `${mediaType}/mp4`);
+        const mediaType = video_audio != "audio" ? "video" : "audio";
+        await bot.replyMedia(context, video.data, mediaType, `${mediaType}/mp4`);
     } else {
-      return await bot.replyText(context, "Houve um erro ao processar!");
+        return await bot.replyText(context, "Houve um erro ao processar!");
     }
-  }
-  
+}
+
 async function downloadImage(context, bot, args) {
     // retorna uma imagem de uma url
     // baixa uma imagem a partir de uma url e baixa a imagem
@@ -99,7 +94,7 @@ async function downloadImage(context, bot, args) {
 }
 
 async function thumbnail(context, bot, args) {
-    if(args.length < 1) {
+    if (args.length < 1) {
         error = "Error! Preciso que uma url seja passada!";
     } else if (args.length > 1) {
         error = "Error! Muitos argumentos!";
@@ -118,7 +113,7 @@ async function thumbnail(context, bot, args) {
         } else if (argument.includes("youtube.com")) {
             argument = argument.replace("youtube.com/watch?=");
         }
-        try{
+        try {
             let thumbnail = await youtube.getThumbnail(argument);
             console.log(thumbnail)
             return await bot.replyMedia(context, thumbnail, "image");
@@ -129,8 +124,23 @@ async function thumbnail(context, bot, args) {
     return await bot.replyText(context, error);
 }
 
-
+async function getLyrics(context, bot, args) {
+    let error = "Erro desconhecido!";
+    const letras = new Letras();
+    const result = await letras.search(args.join(" "));
+    if (result !== null) {
+        const lyrics = await letras.getLyrics(result);
+        if (lyrics !== null) {
+            return await bot.replyText(context, lyrics);
+        } else {
+            error = ('Erro: Falha ao pegar as letras.');
+        }
+    } else {
+        error = ('Erro: Falha ao procurar pela música.');
+    }
+    return await bot.replyText(context, error);
+}
 
 export {
-    start, download, downloadImage, thumbnail, bug, help
+    start, download, downloadImage, thumbnail, bug, help, getLyrics
 };

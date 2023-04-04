@@ -1,6 +1,6 @@
-import { createSticker } from 'whatframework/libs/sticker.js'
-import { Bot } from 'whatframework/src/modules/bot.js';
-import { GroupData } from 'whatframework/src/types/groupData.js';
+import { createSticker } from '@kamuridesu/whatframework/dist/libs/sticker.js'
+import { Bot } from '@kamuridesu/whatframework/dist/src/modules/bot.js';
+import { GroupData } from '@kamuridesu/whatframework/dist/src/types/groupData.js';
 
 async function makeSticker(context, bot, args) {
     let packname = "Riko's stickers collection";
@@ -99,6 +99,7 @@ async function nivelGay(context, bot) {
 }
 
 async function chanceDe(context, bot, args) {
+    let error = "Erro desconhecido!";
     if (args.length == 0) {
         error = "Você precisa especificar qual a chance, ex: !chance de eu ficar off";
     } else {
@@ -112,6 +113,7 @@ async function chanceDe(context, bot, args) {
 }
 
 async function perc(context, bot, args) {
+    let error = "Erro desconhecido!";
     if (args.length == 0) {
         error = "Você dizer o nome da porcentagem!";
     } else {
@@ -131,7 +133,9 @@ async function casal(context, bot, group) {
     if (!group) {
         return bot.replyText(context, "Erro! Comando pode ser usado apenas em um grupo!");
     }
-    const membersExceptBot = group.members.filter((value) => value != bot.botNumber);
+    const membersExceptBot = group.members.filter((value) => value.id.split("@")[0] != bot.botNumber);
+    console.log(membersExceptBot);
+    console.log(bot.botNumber);
     let randomMember_1 = Math.round(Math.random() * membersExceptBot.length);
     let randomMember_2 = Math.round(Math.random() * membersExceptBot.length);
     while (randomMember_2 == randomMember_1 || membersExceptBot[randomMember_1] == undefined || membersExceptBot[randomMember_2] == undefined) {
@@ -143,5 +147,5 @@ async function casal(context, bot, group) {
 }
 
 export {
-   chanceDe, makeSticker, nivelGado, nivelGay, perc, slot, casal
+    chanceDe, makeSticker, nivelGado, nivelGay, perc, slot, casal
 };

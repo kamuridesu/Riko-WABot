@@ -1,5 +1,5 @@
 import { commandHandler } from "./commands.js";
-import path from 'path';
+import { chatsHandler } from "./chats.js";
 
 class Entrypoint {
     prefix = "/";
@@ -10,14 +10,11 @@ class Entrypoint {
     language = "pt-br";
 
     async chatHandlers(bot, message, context, group, metadata) {
-        if (message === "test") {
-            bot.replyText(context, "YEEEEEEy");
-        }
+        chatsHandler(bot, message, context, group, metadata);
     }
 
-    async commandHandlers(bot, message, context, group, metadata) {
-        // In this case, message can be also command to diferentiate the methods.
-        commandHandler(bot, message, context, group, metadata);
+    async commandHandlers(bot, command, args, context, group, metadata) {
+        commandHandler(bot, command, args, context, group, metadata);
     }
 }
 

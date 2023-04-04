@@ -11,10 +11,9 @@
   "license": "GPLv3",
   "type": "module",
   "dependencies": {
-    "link-preview-js": "^3.0.4",
-    "whatframework": "^0.0.11-b"
-  },
-  "devDependencies": {
-    "kamtube": "^0.1.13"
+    "@kamuridesu/kamtube": "^0.1.14",
+    "@kamuridesu/simplelyrics": "^1.0.0",
+    "@kamuridesu/whatframework": "^0.1.2-b",
+    "link-preview-js": "^3.0.4"
   }
 }
