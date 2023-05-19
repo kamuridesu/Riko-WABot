@@ -3,7 +3,8 @@ import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { createSticker } from "@kamuridesu/whatframework/libs/sticker.js";
 import { Emojis } from "../utils/emoji.js";
 import { GPT } from "../utils/gpt.js";
-import { Database, IS_DB_ENABLED } from "../utils/db.js";
+import { FilterDB, IS_DB_ENABLED } from "../utils/db.js";
+import { unlink, writeFile } from "fs/promises";
 
 const gptInstance = new GPT();
 
@@ -92,7 +93,6 @@ export async function slot(message: IMessage) {
 
 ${_message}`
     return message.replyText(slot_message);
-    await message.react(Emojis.success);
 }
 
 export async function nivelGay(message: IMessage) {
@@ -163,7 +163,8 @@ export async function casal(message: IMessage, bot: IBot) {
 
 export async function gpt(message: IMessage, args: string[]) {
     if (args == undefined) return message.replyText("A mensagem não pode ser vazia!");
-    if (!gptInstance.isGPTEnabled) return message.replyText("GPT não está configurado!")
+    if (!gptInstance.isGPTEnabled) return message.replyText("GPT não está configurado!");
+    return await message.replyText("GPT desativado por tempo indefinido, quando voltar mando um anuncio.");
     await message.react(Emojis.waiting);
     return gptInstance.generate(message);
 }
@@ -181,14 +182,14 @@ export async function copyMedia(message: IMessage) {
     await message.react(Emojis.success);
 }
 
-export async function registerFilter(message: IMessage, args: string[], db: Database) {
+export async function registerFilter(message: IMessage, args: string[], db: FilterDB) {
     if (args === undefined || args.length < 1 || message.hasQuotedMessage == false) {
         await message.replyText("Por gentileza, mencione uma mensagem e responda com um filtro!");
         return await message.react(Emojis.fail);
     }
 
-    if (!(message.quotedMessageType == "conversation")) {
-        await message.replyText("Apenas mensagens de texto são suportadas no momento!");
+    if (!(["conversation", "imageMessage", "stickerMessage"].includes(message.quotedMessageType))) {
+        await message.replyText("Apenas mensagens de texto, sticker e imagens são suportadas no momento!");
         return await message.react(Emojis.fail);
     }
 
@@ -199,21 +200,58 @@ export async function registerFilter(message: IMessage, args: string[], db: Data
 
     await db.addChatIfNotExists(message.author.chatJid);
     const filter = args.join(" ");
-    // console.log(message.author.chatJid, message.quotedMessageType, message.quotedMessage?.body, filter);
-    await db.addFilterIfNotExists(message.author.chatJid, message.quotedMessageType, message.quotedMessage!.body, filter);
+
+    if ((await db.getFilters(message.author.chatJid)).filter(x => x.pattern == filter).length > 0) {
+        await message.replyText("Filtro já existe!");
+        return await message.react(Emojis.fail);
+    }
+
+    if (message.quotedMessageType == "conversation") {
+        await db.addFilterIfNotExists(message.author.chatJid, message.quotedMessageType, message.quotedMessage!.body, filter);
+    } else if (["imageMessage", "stickerMessage"].includes(message.quotedMessageType)) {
+        const mediaMsg = JSON.parse(JSON.stringify(message.originalMessage).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo;
+        const buffer = await downloadMediaMessage(mediaMsg, "buffer", {});
+        const randomFilename = `states/filter_media/${Math.random() * 1000}.png`;
+        await writeFile(randomFilename, buffer);
+        await db.addFilterIfNotExists(message.author.chatJid, message.quotedMessageType, randomFilename, filter);
+    }
 
     await message.replyText("Filter criado com sucesso!");
     await message.react(Emojis.success);
 }
 
-export async function removeFilter(message: IMessage, args: string[], db: Database ) {
+export async function removeFilter(message: IMessage, args: string[], db: FilterDB ) {
     if (!IS_DB_ENABLED) {
         await message.replyText("Erro ao consultar banco de dados!");
         return await message.react(Emojis.fail);
     }
 
-    await db.deleteFilter(args.join(" "), message.author.chatJid,);
+    const strFilter = args.join(" ");
 
-    await message.replyText("Filtro deletado");
+    const filter = (await db.getFilters(message.author.chatJid)).find(x => x.pattern == strFilter);
+    if (!(filter?.kind == "conversation")) {
+        try {
+            await unlink(filter!.response);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    await db.deleteFilter(strFilter, message.author.chatJid,);
+
+    await message.replyText("Filtro " + strFilter +" deletado");
     await message.react(Emojis.success);
+}
+
+export async function getFilters(message: IMessage, db: FilterDB) {
+    if (!IS_DB_ENABLED) {
+        await message.replyText("Erro ao consultar banco de dados!");
+        return await message.react(Emojis.fail);
+    }
+
+    const filters = "Filtros registrados no grupo: \n- " + (await db.getFilters(message.author.chatJid))
+                     .map(x => x.pattern)
+                     .join("\n- ");
+    await message.replyText(filters);
+    return await message.react(Emojis.success);
 }

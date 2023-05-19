@@ -14,7 +14,7 @@ RUN npm i
 
 FROM node:18-slim as run
 WORKDIR /app
-RUN apt update && apt install ffmpeg libwebp-dev -y
+RUN apt update && apt install ffmpeg libwebp-dev libopus-dev -y
 COPY --from=deps /app/ .
 COPY --from=build /app/modules /app/modules
 COPY ./init.sh /app/init.sh

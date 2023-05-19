@@ -5,7 +5,12 @@ import { Database } from "../utils/db.js";
 
 export async function validateBotIsAdmin(message: IMessage) {
     let returnValue = true;
-    if (!message.group?.botIsAdmin) {
+    const admins = (await message.bot.connection!
+        .groupMetadata(message.author.chatJid))
+        .participants
+        .filter(x => x.admin != null)
+        .map(x => x.id);
+    if (!admins.includes(message.bot.botNumber!)) {
         await message.react(Emojis.fail);
         await message.replyText("Erro! O bot precisa ser admin para usar este comando!");
         returnValue = false;
@@ -20,7 +25,8 @@ export async function validateIsGroupAndAdmin(message: IMessage) {
         return false;
     }
 
-    const groupMembers = (await message.bot.connection!.groupMetadata(message.author.chatJid))
+    const groupMembers = (await message.bot.connection!
+                            .groupMetadata(message.author.chatJid))
                             .participants
                             .filter(x => x.admin != null)
                             .map(x => x.id);
@@ -147,6 +153,58 @@ export async function resetMessageCounter(message: IMessage, db: Database) {
         await db.addToMessageCount(member.chatId, member.jid, true);
     }
     return await message.react(Emojis.success);
+}
+
+export async function banUser(message: IMessage) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (!(await validateBotIsAdmin(message))) return;
+
+    if (message.mentionedUsers.length < 1 && !message.hasQuotedMessage) {
+        message.react(Emojis.fail);
+        return await message.replyText("Erro! Preciso que algum usuário seja mencionado!");
+    }
+
+    let errorMessage = "";
+    const users = [...message.mentionedUsers, message.quotedMessage?.author?.jid].filter(Boolean) as string[];
+
+    try {
+        await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, users, "remove");
+    } catch (e) {
+        errorMessage = "Erro ao remover membros!"
+    }
+
+    if (errorMessage != "") {
+        await message.react(Emojis.fail);
+        return await message.replyText(errorMessage);
+    }
+    await message.react(Emojis.success);
+}
+
+export async function silenceUserInGroup(message: IMessage, db: Database, silence = true) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (!(await validateBotIsAdmin(message))) return;
+
+    if (message.mentionedUsers.length < 1 && !message.hasQuotedMessage) {
+        message.react(Emojis.fail);
+        return await message.replyText("Erro! Preciso que algum usuário seja mencionado!");
+    }
+
+    let errorMessage = "";
+    const users = [...message.mentionedUsers, message.quotedMessage?.author?.jid].filter(Boolean) as string[];
+
+    try {
+        for (let user of users) {
+            await db.silenceUserFromChat(user, message.author.chatJid, silence);
+        }
+    } catch (e) {
+        errorMessage = "Erro ao silenciar membro!"
+    }
+
+    if (errorMessage != "") {
+        await message.react(Emojis.fail);
+        return await message.replyText(errorMessage);
+    }
+    await message.react(Emojis.success);
 }
 
 export const demote = (message: IMessage) => changeRole(message, 'demote');

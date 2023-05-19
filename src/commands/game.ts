@@ -1,9 +1,9 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
-import { Database } from "../utils/db.js";
+import { Database, PointsDB } from "../utils/db.js";
 import { Emojis } from "../utils/emoji.js";
 import { validateIsGroupAndAdmin } from "./admin.js";
 
-export async function changePoints(message: IMessage, args: string[], db: Database, subtract = false) {
+export async function changePoints(message: IMessage, args: string[], db: PointsDB, subtract = false) {
     if (!(await validateIsGroupAndAdmin(message))) return;
     if (args.length < 1) {
         await message.replyText("Erro! Faltando numero de pontos");
@@ -35,7 +35,7 @@ export async function changePoints(message: IMessage, args: string[], db: Databa
 }
 
 export async function getAllMembers(message: IMessage, db: Database) {
-    const result = await db.getAllMembers(message.author.chatJid);
+    const result = (await db.getAllMembers(message.author.chatJid)).filter(x => x.points != 0);
     let resultString = "Pontuação atual: \n\n";
     for (let member of result) {
         resultString += "- " + member.jid + ": " + member.points + "\n";
@@ -74,7 +74,7 @@ export async function rollDice(message: IMessage, args: string[]) {
     return await message.react(Emojis.success)
 }
 
-export async function resetPointsCounter(message: IMessage, db: Database) {
+export async function resetPointsCounter(message: IMessage, db: PointsDB) {
     if (!(await validateIsGroupAndAdmin(message))) return;
     const usersWithMessage = (await db.getAllMembers(message.author.chatJid));
     for (let member of usersWithMessage) {

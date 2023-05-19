@@ -7,6 +7,7 @@ import { Emojis } from "../utils/emoji.js";
 import { parseMessageToNameAndEpisode } from "../utils/parsers.js";
 import { NekosAPIAxiosProxy, fetchResponse, getRandomImageFromApi } from "../utils/nekoapi.js";
 import { TagNames, Tags } from "nekosapi/v3/types/Tags.js";
+import { convertToOpus } from "../utils/media.js";
 
 export async function download(message: IMessage, args: string[], video_audio = "mixed") {
     if (args.length < 1) {
@@ -74,6 +75,10 @@ export async function download(message: IMessage, args: string[], video_audio = 
 
     if (video != null) {
         const mediaType = video_audio != "audio" ? "video" : "audio";
+        const mimeType = video_audio != "audio" ? `${mediaType}/mp4` : `${mediaType}/ogg`
+        if (mediaType == "audio") {
+            video.data = await convertToOpus(video.data);
+        }
         const sentMessage = await message.replyMedia(video.data as any, mediaType, `${mediaType}/mp4`, videoTitle);
         if (sentMessage == undefined) {
             return await message.react(Emojis.fail);

@@ -89,7 +89,7 @@ export class GPT {
             message.message.react(Emojis.success);
         } catch (e) {
             message.message.react(Emojis.fail);
-            message.message.replyText("Erro!");
+            message.message.replyText("GPT desativado por tempo indefinido, quando voltar mando um anuncio.");
         }
         message.done = true;
         message.running = false;

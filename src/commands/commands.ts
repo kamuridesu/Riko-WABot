@@ -5,11 +5,9 @@ import * as media from "./media.js"
 import * as diversao from "./fun.js";
 import * as admin from "./admin.js";
 import * as games from "./game.js";
-import { Database } from '../utils/db.js';
+import { Database, PointsDB, FilterDB } from '../utils/db.js';
 
-const DATABASE = new Database();
-
-export function registerCommands(handler: CommandHandler) {
+export function registerCommands(handler: CommandHandler, DATABASE: Database, FILTERDB: FilterDB, POINTSDB: PointsDB) {
     const infoCommands: ICommands = {
         category: "INFO",
         commands: [
@@ -46,13 +44,13 @@ export function registerCommands(handler: CommandHandler) {
             {
                 name: "music",
                 description: "Envia uma musica a partir de um link ou nome",
-                aliases: ["música", "music"],
+                aliases: ["música", "music", "musica"],
                 func: (_: IBot, message: IMessage, args: string[]) => {media.download(message, args, "audio")}
             },
             {
                 name: "video",
                 description: "Envia um video a partir de um link ou nome",
-                aliases: ["vid"],
+                aliases: ["vid", "vídeo"],
                 func: (_: IBot, message: IMessage, args: string[]) => {media.download(message, args)}
             },
             {
@@ -64,7 +62,7 @@ export function registerCommands(handler: CommandHandler) {
             {
                 name: "thumbnail",
                 description: "Baixa e envia uma thumbnail de um video no youtube",
-                aliases: ["vid"],
+                aliases: [],
                 func: (_: IBot, message: IMessage, args: string[]) => {media.thumbnail(message, args)}
             },
             {
@@ -74,7 +72,7 @@ export function registerCommands(handler: CommandHandler) {
                 func: (_: IBot, message: IMessage, args: string[]) => {media.getAnime(message, args.join(" "))}
             },
             {
-                name: "randomImage",
+                name: "animage",
                 description: "Envia uma imagem aleatoria",
                 aliases: ["rdi", "image"],
                 func: (_, message, args) => {media.getImageNekosApi(message, args)}
@@ -156,14 +154,20 @@ export function registerCommands(handler: CommandHandler) {
                 name: "filter",
                 description: "Cria um filter para responder a um padrão, ex: /filter meu cu",
                 aliases: [],
-                func: (_, message, args) => {diversao.registerFilter(message, args, DATABASE)}
+                func: (_, message, args) => {diversao.registerFilter(message, args, FILTERDB)}
             },
             {
                 name: "rfilter",
                 description: "Remove um filter, ex: /rfilter test",
-                aliases: [],
-                func: (_, message, args) => {diversao.removeFilter(message, args, DATABASE)}
-            }
+                aliases: ["rf"],
+                func: (_, message, args) => {diversao.removeFilter(message, args, FILTERDB)}
+            },
+            {
+                name: "lfilter",
+                description: "Lista os filtros, ex: /lfilter",
+                aliases: ["lf"],
+                func: (_, message) => {diversao.getFilters(message, FILTERDB)}
+            },
         ]
     }
 
@@ -196,21 +200,39 @@ export function registerCommands(handler: CommandHandler) {
             },
             {
                 name: "listamsg",
-                description: "Lista o numero de mensagem por usuarios",
+                description: "Lista o numero de mensagem por membros",
                 aliases: ["lm", "lmsg"],
                 func: (_, message) => {admin.getAllUsersMessages(message, DATABASE)}
             },
             {
                 name: "listanomsg",
-                description: "Lista o numero de mensagem por usuarios",
+                description: "Lista o numero de mensagem por membros",
                 aliases: ["lnm", "lnmsg"],
                 func: (_, message) => {admin.getUsersWithNoMessage(message, DATABASE)}
             },
             {
                 name: "resetmsg",
-                description: "Lista o numero de mensagem por usuarios",
+                description: "Lista o numero de mensagem por membros",
                 aliases: ["rmsg"],
                 func: (_, message) => {admin.resetMessageCounter(message, DATABASE)}
+            },
+            {
+                name: "ban",
+                description: "Bane algum membro mencionado",
+                aliases: [],
+                func: (_, message) => {admin.banUser(message)}
+            },
+            {
+                name: "mute",
+                description: "Silencia um membro, apagando todas as mensagens enviadas por ele",
+                aliases: ["silence"],
+                func: (_, message) => {admin.silenceUserInGroup(message, DATABASE, true)}
+            },
+            {
+                name: "unmute",
+                description: "Desmuta um membro",
+                aliases: ["um"],
+                func: (_, message) => {admin.silenceUserInGroup(message, DATABASE, false)}
             }
         ]
     }
@@ -222,13 +244,13 @@ export function registerCommands(handler: CommandHandler) {
                 name: "apoints",
                 description: "Adiciona pontos a uma pessoa, ex: $prefix$command @xxxxx 1",
                 aliases: ["ap"],
-                func: (_: IBot, message: IMessage, args: string[]) => {games.changePoints(message, args, DATABASE)}
+                func: (_: IBot, message: IMessage, args: string[]) => {games.changePoints(message, args, POINTSDB)}
             },
             {
                 name: "rpoints",
                 description: "Remove pontos de uma pessoa, ex: $prefix$command @xxxxx 1",
                 aliases: ["rp"],
-                func: (_: IBot, message: IMessage, args: string[]) => {games.changePoints(message, args, DATABASE, true)}
+                func: (_: IBot, message: IMessage, args: string[]) => {games.changePoints(message, args, POINTSDB, true)}
             },
             {
                 name: "lpoints",
@@ -240,7 +262,7 @@ export function registerCommands(handler: CommandHandler) {
                 name: "repoints",
                 description: "Lista todos os pontos, ex: $prefix$command",
                 aliases: ["rep"],
-                func: (_: IBot, message: IMessage) => {games.resetPointsCounter(message, DATABASE)}
+                func: (_: IBot, message: IMessage) => {games.resetPointsCounter(message, POINTSDB)}
             },
             {
                 name: "roll",

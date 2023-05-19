@@ -28,7 +28,9 @@ export interface Member {
     jid: string;
     chatId: string;
     points: number;
-    msgCount: number | null; 
+    msgCount: number | null;
+    botSilenced: boolean;
+    groupSilenced: boolean;   
 }
 
 export class Database {
@@ -39,7 +41,7 @@ export class Database {
         this.connect().then(() => console.log("DB OK"));
     }
 
-    private async connect() {
+    async connect() {
         this.db = await open({
             filename: this.dbFile,
             driver: DBDriver
@@ -52,20 +54,6 @@ export class Database {
         await this.db?.run(query, [chatJid]);
     }
 
-    async addFilter(filter: string, kind: string, chatJid: string, response: string) {
-        const query = `INSERT INTO filter (pattern, jid, kind, response) VALUES (?, ?, ?, ?);`;
-        await this.connect();
-        await this.db?.run(query, [filter, chatJid, kind, response]);
-    }
-
-    async getFilters(chatJid: string): Promise<Filter[]> {
-        const query = `SELECT * FROM filter WHERE jid = ?`;
-        await this.connect();
-        const result = await this.db?.all(query, [chatJid]);
-        if (result) return result;
-        return [];
-    }
-
     async getChat(chatJid: string): Promise<String | null> {
         const query = `SELECT * FROM chat WHERE jid = ?`;
         await this.connect();
@@ -74,21 +62,9 @@ export class Database {
         return null;
     }
 
-    async deleteFilter(filter: string, chatJid: string) {
-        const query = `DELETE FROM filter WHERE pattern = ? AND jid = ?;`;
-        await this.connect();
-        await this.db?.run(query, [filter, chatJid]);
-    }
-
     async addChatIfNotExists(chatjid: string) {
         if ((await this.getChat(chatjid)) == null) {
             await this.addChat(chatjid);
-        }
-    }
-
-    async addFilterIfNotExists(chatJid: string, kind: string, response: string, pattern: string) {
-        if ((await this.getFilters(chatJid)).filter((x) => x.pattern == pattern).length < 1) {
-            await this.addFilter(pattern, kind, chatJid, response);
         }
     }
 
@@ -99,32 +75,11 @@ export class Database {
         return result ? result : null;
     }
 
-    async updateMemberPoints(chatJid: string, userJid: string, points: number) {
-        const query = `UPDATE member SET points=? WHERE chatId = ? AND jid = ?`;
-        await this.connect();
-        await this.db?.run(query, [points, chatJid, userJid]);
-    }
-
     async createMember(chatJid: string, userJid: string) {
+        await this.addChatIfNotExists(chatJid);
         const query = `INSERT INTO member (jid, chatId, points, msgCount) VALUES (?, ?, ?, ?)`;
         await this.connect();
         await this.db?.run(query, [userJid, chatJid, 0, 0]);
-    }
-
-    async addMemberToPoints(chatJid: string, userJid: string, points: number, subtract = false) {
-        const member = await this.getMember(chatJid, userJid);
-        let newPoints = 0;
-        if (!member) {
-            await this.createMember(chatJid, userJid);
-        } else {
-            newPoints = member.points;
-        }
-        if (subtract) {
-            newPoints = newPoints - points;
-        } else {
-            newPoints += points;
-        }
-        await this.updateMemberPoints(chatJid, userJid, newPoints);
     }
 
     async getAllMembers(chatJid: string) {
@@ -153,4 +108,89 @@ export class Database {
         await this.connect();
         await this.db?.run(query, [totalMessages, userJid, chatJid]);
     }
+
+    async silenceUserFromBot(userJid: string, chatJid: string, silence = true) {
+        const member = await this.getMember(chatJid, userJid);
+        if (!member) {
+            await this.createMember(chatJid, userJid);
+        }
+        await this.connect();
+        const query = `UPDATE member SET botSilenced=? WHERE jid = ? AND chatId = ?`;
+        const silenced = silence ? 1 : 0;
+        await this.db?.run(query, [silenced, userJid, chatJid]);
+    }
+
+    async silenceUserFromChat(userJid: string, chatJid: string, silence = true) {
+        const member = await this.getMember(chatJid, userJid);
+        if (!member) {
+            await this.createMember(chatJid, userJid);
+        }
+        await this.connect();
+        const query = `UPDATE member SET groupSilenced=? WHERE jid = ? AND chatId = ?`;
+        const silenced = silence ? 1 : 0;
+        await this.db?.run(query, [silenced, userJid, chatJid]);
+    }
+}
+
+
+export class PointsDB extends Database {
+    constructor() {
+        super();
+    }
+
+    async updateMemberPoints(chatJid: string, userJid: string, points: number) {
+        const query = `UPDATE member SET points=? WHERE chatId = ? AND jid = ?`;
+        await this.connect();
+        await this.db?.run(query, [points, chatJid, userJid]);
+    }
+
+    async addMemberToPoints(chatJid: string, userJid: string, points: number, subtract = false) {
+        const member = await this.getMember(chatJid, userJid);
+        let newPoints = 0;
+        if (!member) {
+            await this.createMember(chatJid, userJid);
+        } else {
+            newPoints = member.points;
+        }
+        if (subtract) {
+            newPoints = newPoints - points;
+        } else {
+            newPoints += points;
+        }
+        await this.updateMemberPoints(chatJid, userJid, newPoints);
+    }
+}
+
+
+export class FilterDB extends Database {
+    constructor() {
+        super();
+    }
+
+    async addFilterIfNotExists(chatJid: string, kind: string, response: string, pattern: string) {
+        if ((await this.getFilters(chatJid)).filter((x) => x.pattern == pattern).length < 1) {
+            await this.addFilter(pattern, kind, chatJid, response);
+        }
+    }
+
+    async deleteFilter(filter: string, chatJid: string) {
+        const query = `DELETE FROM filter WHERE pattern = ? AND jid = ?;`;
+        await this.connect();
+        await this.db?.run(query, [filter, chatJid]);
+    }
+
+    async getFilters(chatJid: string): Promise<Filter[]> {
+        const query = `SELECT * FROM filter WHERE jid = ?`;
+        await this.connect();
+        const result = await this.db?.all(query, [chatJid]);
+        if (result) return result;
+        return [];
+    }
+
+    async addFilter(filter: string, kind: string, chatJid: string, response: string) {
+        const query = `INSERT INTO filter (pattern, jid, kind, response) VALUES (?, ?, ?, ?);`;
+        await this.connect();
+        await this.db?.run(query, [filter, chatJid, kind, response]);
+    }
+
 }

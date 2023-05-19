@@ -13,7 +13,7 @@ function checkResponseCode(response: AxiosResponse<any, any>) {
 
 export async function fetchResponse<T>(url: URL, responseAsBytes = false): Promise<T> {
     const proxy = process.env.PROXY_HOST != undefined ? Socks5Proxy : false;
-    let agent;
+    let agent: SocksProxyAgent | undefined;
     if (proxy) {
         const proxyURL = `${proxy.protocol}://${proxy.auth.username}:${proxy.auth.password}@${proxy.host}:${proxy.port}`;
         agent = new SocksProxyAgent(proxyURL);
@@ -46,7 +46,7 @@ export async function getRandomImageFromApi(message: IMessage, api: NekosAPIAxio
         await message.replyMedia(webpImage, "image", "");
         await message.react(Emojis.success);
     } catch (e) {
-        await message.replyText("Erro! Algo deu errado!");
+        await message.replyText("Algo deu errado!");
         await message.react(Emojis.fail);
     }
 }
