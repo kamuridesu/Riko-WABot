@@ -7,11 +7,14 @@ export async function start(message: IMessage) {
 }
 
 export async function bug(message: IMessage, bot: IBot, chat: IChatMetadata, args: string[]) {
+    if (!bot.ownerNumber) {
+        return await message.replyText("Owner não configurou o número!");
+    }
     if (args.length < 1) {
         return await message.replyText("Por favor, digite o bug que você está reportando!");
     }
     const bug = args.join(" ");
     const sender = "https://wa.me/" + chat.messageSender.split("@")[0];
     await bot.sendTextMessage(bot.ownerNumber + "@s.whatsapp.net", "Bug reportado por: " + sender + " \n\n" + bug, {});
-    return await message.replyText("Bug reportado com sucesso! O abuso desse comando pode ser punido!");
+    return await message.replyText("Bug reportado com sucesso!");
 }

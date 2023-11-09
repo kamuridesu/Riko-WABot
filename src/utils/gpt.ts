@@ -7,6 +7,8 @@ interface MessageData {
     running: boolean;
 }
 
+const gptURL = process.env.GPT_HOST ? process.env.GPT_HOST : "localhost:11434"
+
 export class GPT {
     fila: MessageData[] = [];
     maxMessage = 2;
@@ -53,7 +55,7 @@ export class GPT {
         message.running = true;
         const messageText = message.message.body.split(' ').slice(1).join(" ").replace(/\n/gi, ". ");
         const response = await axios.post(
-            'http://localhost:11434/api/generate',
+            `http://${gptURL}/api/generate`,
             `{\n  "model": "mistral",\n  "prompt":"${messageText}"\n }`,
             {
                 headers: {
