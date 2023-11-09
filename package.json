@@ -4,16 +4,23 @@
   "description": "",
   "main": "whatframework",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --outDir modules --skipLibCheck"
   },
   "keywords": [],
   "author": "kamuridesu",
   "license": "GPLv3",
   "type": "module",
   "dependencies": {
-    "@kamuridesu/kamtube": "^0.1.14",
-    "@kamuridesu/simplelyrics": "^1.0.0",
-    "@kamuridesu/whatframework": "^0.1.2-b",
+    "@kamuridesu/kamtube": "^0.1.17",
+    "@kamuridesu/simplelyrics": "^1.0.2",
+    "@kamuridesu/whatframework": "^0.1.20-b",
+    "axios": "^1.6.0",
     "link-preview-js": "^3.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
   }
 }
