@@ -2,6 +2,7 @@ import { CommandHandler } from '@kamuridesu/whatframework/libs/handlers.js';
 import * as info from "./info.js";
 import * as media from "./media.js"
 import * as diversao from "./fun.js";
+import * as admin from "./admin.js";
 import { IBot, IChatMetadata, IGroupData, IMessage } from '@kamuridesu/whatframework/@types/types.js';
 import { ICommands } from '@kamuridesu/whatframework/@types/commands.js';
 
@@ -45,7 +46,7 @@ export function registerCommands(handler: CommandHandler) {
         ]
     }
 
-    const mediaCommands = {
+    const mediaCommands: ICommands = {
         category: "MIDIA",
         commands: [
             {
@@ -75,7 +76,7 @@ export function registerCommands(handler: CommandHandler) {
         ]
     }
     
-    const funCommands = {
+    const funCommands: ICommands = {
         category: "DIVERSAO",
         commands: [
             {
@@ -129,5 +130,17 @@ export function registerCommands(handler: CommandHandler) {
         ]
     }
 
-    handler.register(infoCommands, funCommands, mediaCommands);
+    const adminCommands: ICommands = {
+        category: "ADMIN",
+        commands: [
+            {
+                name: "todos",
+                description: "Marca todos os membros do chat",
+                aliases: ["all"],
+                func: (_: IBot, message: IMessage, args: string[], group: IGroupData) => {admin.mentionAll(message, args, group)}
+            }
+        ]
+    }
+
+    handler.register(infoCommands, funCommands, mediaCommands, adminCommands);
 }
