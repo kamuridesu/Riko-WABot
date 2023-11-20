@@ -1,10 +1,9 @@
 import { CommandHandler } from '@kamuridesu/whatframework/libs/handlers.js';
+import { IBot, IMessage, ICommands } from '@kamuridesu/whatframework/@types/types.js';
 import * as info from "./info.js";
 import * as media from "./media.js"
 import * as diversao from "./fun.js";
 import * as admin from "./admin.js";
-import { IBot, IChatMetadata, IGroupData, IMessage } from '@kamuridesu/whatframework/@types/types.js';
-import { ICommands } from '@kamuridesu/whatframework/@types/commands.js';
 
 export function registerCommands(handler: CommandHandler) {
     const infoCommands: ICommands = {
@@ -32,7 +31,7 @@ export function registerCommands(handler: CommandHandler) {
                 name: "bug",
                 description: "",
                 aliases: [],
-                func: (bot: IBot, message: IMessage, args: string[], _: IGroupData, chat: IChatMetadata) => {info.bug(message, bot, chat, args)}
+                func: (bot: IBot, message: IMessage, args: string[]) => {info.bug(message, bot, args)}
             },
             {
                 name: "reply",
@@ -119,7 +118,7 @@ export function registerCommands(handler: CommandHandler) {
                 name: "casal",
                 description: "Escolhe um casal aleatorio",
                 aliases: [],
-                func: (bot: IBot, message: IMessage, _: string[], group: IGroupData) => {diversao.casal(message, bot, group)}
+                func: (bot: IBot, message: IMessage, _: string[]) => {diversao.casal(message, bot)}
             },
             {
                 name: "gpt",
@@ -137,7 +136,7 @@ export function registerCommands(handler: CommandHandler) {
                 name: "todos",
                 description: "Marca todos os membros do chat",
                 aliases: ["all"],
-                func: (_: IBot, message: IMessage, args: string[], group: IGroupData) => {admin.mentionAll(message, args, group)}
+                func: (_: IBot, message: IMessage, args: string[]) => {admin.mentionAll(message, args)}
             }
         ]
     }

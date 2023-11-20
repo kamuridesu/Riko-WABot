@@ -1,4 +1,4 @@
-import { EntryPoint, IBot, IChatMetadata, IGroupData, IMessage } from "@kamuridesu/whatframework/@types/types.js";
+import { EntryPoint, IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { CommandHandler } from "@kamuridesu/whatframework/libs/handlers.js";
 import { chatsHandler } from "./src/chat/handlers.js";
 import { registerCommands } from "./src/commands/commands.js";
@@ -16,12 +16,12 @@ class Entrypoint implements EntryPoint{
         registerCommands(this.handler);
     }
 
-    async chatHandlers(bot: IBot, message: string, context: IMessage, group: IGroupData | undefined, metadata: IChatMetadata) {
-        chatsHandler(bot, message, context, group, metadata);
+    async chatHandlers(bot: IBot, message: string, context: IMessage) {
+        chatsHandler(bot, message, context);
     }
 
-    async commandHandlers(bot: IBot, command: string, args: string[], context: IMessage, group: IGroupData | undefined, metadata: IChatMetadata) {
-        this.handler.handle(command, bot, context, args, group as IGroupData, metadata);
+    async commandHandlers(bot: IBot, command: string, args: string[], context: IMessage) {
+        this.handler.handle(command, bot, context, args);
     }
 }
 

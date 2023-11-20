@@ -1,4 +1,4 @@
-import { IBot, IGroupData, IMessage } from "@kamuridesu/whatframework/@types/types.js";
+import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { createSticker } from "@kamuridesu/whatframework/libs/sticker.js";
 
 import { GPT } from "../utils/gpt.js";
@@ -125,11 +125,12 @@ export async function perc(message: IMessage, args: string[]) {
     return await message.replyText(error);
 }
 
-export async function casal(message: IMessage, bot: IBot, group: IGroupData) {
-    if (!group) {
+export async function casal(message: IMessage, bot: IBot) {
+    if (!message.chatIsGroup) {
         return message.replyText("Erro! Comando pode ser usado apenas em um grupo!");
     }
-    const membersExceptBot = group.members.filter((value) => value.id.split("@")[0] != bot.botNumber);
+    const membersExceptBot = message.group?.members.filter((value) => value.id.split("@")[0] != bot.botNumber);
+    if (membersExceptBot == undefined) return message.replyText("Erro! Comando pode ser usado apenas em um grupo!");;
     console.log(membersExceptBot);
     console.log(bot.botNumber);
     let randomMember_1 = Math.round(Math.random() * membersExceptBot.length);
