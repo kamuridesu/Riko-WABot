@@ -74,6 +74,7 @@ export class GPT {
             }
         }
         message.message.replyText(responseText);
+        message.message.react("✅");
         message.done = true;
         message.running = false;
     }

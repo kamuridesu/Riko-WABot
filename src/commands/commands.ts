@@ -39,7 +39,6 @@ export function registerCommands(handler: CommandHandler) {
                 aliases: [],
                 func: async (_: IBot, message: IMessage) => {
                     const sentMessage = await message.replyText("Oi", {});
-                    const otherMessage = await sentMessage?.replyText("Estou me respondendo", {})
                 }
             }
         ]
@@ -88,31 +87,31 @@ export function registerCommands(handler: CommandHandler) {
                 name: "slot",
                 description: "Slot machine",
                 aliases: [],
-                func: (bot: IBot, message: IMessage) => {diversao.slot(message)}
+                func: (_: IBot, message: IMessage) => {diversao.slot(message)}
             },
             {
                 name: "chance",
                 description: "Chance de..., exemplo: $prefixchance de eu ganhar 1 real",
                 aliases: [],
-                func: (bot: IBot, message: IMessage, args: string[]) => {diversao.chanceDe(message, args)}
+                func: (_: IBot, message: IMessage, args: string[]) => {diversao.chanceDe(message, args)}
             },
             {
                 name: "perc",
                 description: "Você é % ..., exemplo: $prefixperc gay",
                 aliases: [],
-                func: (bot: IBot, message: IMessage, args: string[]) => {diversao.perc(message, args)}
+                func: (_: IBot, message: IMessage, args: string[]) => {diversao.perc(message, args)}
             },
             {
                 name: "gay",
                 description: "O quanto vc é gay",
                 aliases: [],
-                func: (bot: IBot, message: IMessage, args: string[]) => {diversao.nivelGay(message)}
+                func: (_: IBot, message: IMessage) => {diversao.nivelGay(message)}
             },
             {
                 name: "gado",
                 description: "O quanto vc é gado",
                 aliases: [],
-                func: (bot: IBot, message: IMessage, args: string[]) => {diversao.nivelGado(message)}
+                func: (_: IBot, message: IMessage) => {diversao.nivelGado(message)}
             },
             {
                 name: "casal",

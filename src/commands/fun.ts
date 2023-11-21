@@ -6,6 +6,7 @@ import { GPT } from "../utils/gpt.js";
 const gptInstance = new GPT();
 
 export async function makeSticker(bot: IBot, message: IMessage, args: string[]) {
+    await message.react("⏳");
     let packname = "Riko's stickers collection";
     let author = "Riko Bot";
 
@@ -18,6 +19,7 @@ export async function makeSticker(bot: IBot, message: IMessage, args: string[]) 
             author = args[1];
         }
     }
+    await message.react("✅");
 
     return createSticker(message, bot, author, packname)
 }
@@ -54,6 +56,7 @@ export async function nivelGado(message: IMessage) {
         "Mestre dos Chifrudos"
     ];
     let choice = `Você é:\n\n${messages[Math.floor(Math.random() * messages.length)]}`;
+    await message.react("✅");
     return await message.replyText(choice);
 }
 
@@ -82,6 +85,7 @@ export async function slot(message: IMessage) {
 ╚════ ≪ •❈• ≫ ═══╝
 
 ${_message}`
+    await message.react("✅");
     return message.replyText(slot_message);
 }
 
@@ -96,7 +100,8 @@ export async function nivelGay(message: IMessage) {
     ]
     const percentage = Math.round(Math.random() * 100);
     const index = percentage <= 10 ? 0 : (percentage > 10 && percentage <= 20 ? 1 : (percentage > 20 && percentage <= 30 ? 2 : (percentage > 30 && percentage <= 40 ? 3 : (percentage > 40 && percentage <= 50 ? 4 : 5))));
-    const response = `Você é ${percentage}% gay\n\n${responses[index]}`
+    const response = `Você é ${percentage}% gay\n\n${responses[index]}`;
+    await message.react("✅");
     return message.replyText(response);
 }
 
@@ -106,11 +111,12 @@ export async function chanceDe(message: IMessage, args: string[]) {
         error = "Você precisa especificar qual a chance, ex: !chance de eu ficar off";
     } else {
         const text = args.join(" ");
-        if (text.includes("virgindade") || text.includes("virgindade") || text.includes("virgem")) {
+        if (text.includes("virgindade") || text.includes("virgem")) {
             return await message.replyText("Nenhuma");
         }
         return await message.replyText("A chance " + text + " é de " + Math.round(Math.random() * 100) + "%");
     }
+    await message.react("✅");
     return await message.replyText(error);
 }
 
@@ -122,6 +128,7 @@ export async function perc(message: IMessage, args: string[]) {
         const text = args.join(" ");
         return await message.replyText("Você é " + Math.round(Math.random() * 100) + "% " + text);
     }
+    await message.react("✅");
     return await message.replyText(error);
 }
 
@@ -131,15 +138,17 @@ export async function casal(message: IMessage, bot: IBot) {
     }
     const membersExceptBot = message.group?.members.filter((value) => value.id.split("@")[0] != bot.botNumber);
     if (membersExceptBot == undefined) return message.replyText("Erro! Comando pode ser usado apenas em um grupo!");;
-    console.log(membersExceptBot);
-    console.log(bot.botNumber);
-    let randomMember_1 = Math.round(Math.random() * membersExceptBot.length);
-    let randomMember_2 = Math.round(Math.random() * membersExceptBot.length);
-    while (randomMember_2 == randomMember_1 || membersExceptBot[randomMember_1] == undefined || membersExceptBot[randomMember_2] == undefined) {
-        randomMember_2 = Math.round(Math.random() * membersExceptBot.length);
-        randomMember_1 = Math.round(Math.random() * membersExceptBot.length);
+
+    let shuffled = [...membersExceptBot];
+    for (let i = membersExceptBot.length; i; i--) {
+        let j = Math.floor(Math.random() * i);
+        [shuffled[i - 1], shuffled[j]] = [shuffled[j], shuffled[i - 1]];
     }
-    let _message = "❤️❤️ Meu casal ❤️❤️\n\n" + `${membersExceptBot[randomMember_1].id} + ${membersExceptBot[randomMember_2].id}`
+
+    const sliced = shuffled.slice(0, 2);
+
+    let _message = "❤️❤️ Meu casal ❤️❤️\n\n" + `${sliced[0].id} + ${sliced[1].id}`;
+    await message.react("✅");
     message.replyText(_message);
 }
 

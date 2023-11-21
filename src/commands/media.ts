@@ -4,10 +4,13 @@ import { Letras } from "@kamuridesu/simplelyrics";
 
 export async function download(message: IMessage, args: string[], video_audio = "mixed") {
     if (args.length < 1) {
+        await message.react("❌");
         return await message.replyText(
             `Por favor, escolha um ${video_audio == "mixed" ? "video" : "audio"} para baixar!`
         );
     }
+
+    await message.react("🔍");
 
     const youtube = new KamTube();
     let argument: any = args.join(" ");
@@ -21,17 +24,19 @@ export async function download(message: IMessage, args: string[], video_audio = 
                 argument = results[c];
                 c++;
                 if (c == results.length) {
+                    await message.react("❌");
                     return await message.replyText("Erro! Nenhum vídeo encontrado!")
                 }
             } while (argument.type == "channel" || argument.type == "playlist");
             argument = argument.videoId;
         } catch (e) {
             console.log(e);
+            await message.react("❌");
             return await message.replyText("Houve um erro ao processar!");
         }
     }
 
-    await message.replyText("Aguarde enquanto eu baixo...");
+    await message.react("⏳");
 
     let video = null;
 
@@ -39,6 +44,7 @@ export async function download(message: IMessage, args: string[], video_audio = 
         video = await youtube.download(argument, video_audio, video_audio == "audio" ? undefined : "360");
     } catch (e) {
         console.log(e);
+        await message.react("❌");
         return await message.replyText("Houve um erro ao baixar");
     }
 
@@ -46,8 +52,13 @@ export async function download(message: IMessage, args: string[], video_audio = 
 
     if (video != null) {
         const mediaType = video_audio != "audio" ? "video" : "audio";
-        await message.replyMedia(video.data as any, mediaType, `${mediaType}/mp4`);
+        const sentMessage = await message.replyMedia(video.data as any, mediaType, `${mediaType}/mp4`);
+        if (sentMessage == undefined) {
+            return await message.react("❌");
+        }
+        return await message.react("✅");
     } else {
+        await message.react("❌");
         return await message.replyText("Houve um erro ao processar!");
     }
 }
@@ -77,6 +88,7 @@ export async function thumbnail(message: IMessage, args: string[]) {
             let thumbnail = await youtube.getThumbnail(argument);
             return await message.replyMedia(thumbnail as string, "image");
         } catch (e) {
+            await message.react("❌");
             error = "Error! Não foi possível encontrar o thumbnail!";
         }
     }
@@ -85,17 +97,23 @@ export async function thumbnail(message: IMessage, args: string[]) {
 
 export async function getLyrics(message: IMessage, args: string[]) {
     let error = "Erro desconhecido!";
+    let reaction = "❌";
     const letras = new Letras();
     const result = await letras.search(args.join(" "));
     if (result !== null) {
         const lyrics = await letras.getLyrics(result);
         if (lyrics !== null) {
+            reaction = "✅"
+            await message.react(reaction);
             return await message.replyText(lyrics);
         } else {
+            reaction = "❌";
             error = ('Erro: Falha ao pegar as letras.');
         }
     } else {
+        reaction = "❌";
         error = ('Erro: Falha ao procurar pela música.');
     }
+    await message.react(reaction);
     return await message.replyText(error);
 }
