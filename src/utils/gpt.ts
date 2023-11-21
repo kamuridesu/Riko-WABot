@@ -54,27 +54,32 @@ export class GPT {
     async generateTextReply(message: MessageData) {
         message.running = true;
         const messageText = message.message.body.split(' ').slice(1).join(" ").replace(/\n/gi, ". ");
-        const response = await axios.post(
-            `http://${gptURL}/api/generate`,
-            `{\n  "model": "mistral",\n  "prompt":"${messageText}"\n }`,
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+        try {
+            const response = await axios.post(
+                `http://${gptURL}/api/generate`,
+                `{\n  "model": "mistral",\n  "prompt":"${messageText}"\n }`,
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+            let responseText = "";
+            for (let line of response.data.split("\n")) {
+                line = line.trim();
+                if (line) {
+                    const responseJSON = JSON.parse(line);
+                    if (responseJSON.response != undefined) {
+                        responseText += JSON.parse(line).response;
+                    }
                 }
             }
-        );
-        let responseText = "";
-        for (let line of response.data.split("\n")) {
-            line = line.trim();
-            if (line) {
-                const responseJSON = JSON.parse(line);
-                if (responseJSON.response != undefined) {
-                    responseText += JSON.parse(line).response;
-                }
-            }
+            message.message.replyText(responseText);
+            message.message.react("✅");
+        } catch (e) {
+            message.message.react("❌");
+            message.message.replyText("Erro!");
         }
-        message.message.replyText(responseText);
-        message.message.react("✅");
         message.done = true;
         message.running = false;
     }

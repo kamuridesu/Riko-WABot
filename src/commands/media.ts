@@ -15,6 +15,9 @@ export async function download(message: IMessage, args: string[], video_audio = 
     const youtube = new KamTube();
     let argument: any = args.join(" ");
 
+    let videoId = "";
+    let videoTitle = "";
+
     const regex = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
     if (!regex.test(argument)) {
         try {
@@ -28,7 +31,8 @@ export async function download(message: IMessage, args: string[], video_audio = 
                     return await message.replyText("Erro! Nenhum vídeo encontrado!")
                 }
             } while (argument.type == "channel" || argument.type == "playlist");
-            argument = argument.videoId;
+            videoId = argument.videoId;
+            videoTitle = argument.title;
         } catch (e) {
             console.log(e);
             await message.react("❌");
@@ -41,7 +45,7 @@ export async function download(message: IMessage, args: string[], video_audio = 
     let video = null;
 
     try {
-        video = await youtube.download(argument, video_audio, video_audio == "audio" ? undefined : "360");
+        video = await youtube.download(videoId, video_audio, video_audio == "audio" ? undefined : "360");
     } catch (e) {
         console.log(e);
         await message.react("❌");
@@ -52,7 +56,7 @@ export async function download(message: IMessage, args: string[], video_audio = 
 
     if (video != null) {
         const mediaType = video_audio != "audio" ? "video" : "audio";
-        const sentMessage = await message.replyMedia(video.data as any, mediaType, `${mediaType}/mp4`);
+        const sentMessage = await message.replyMedia(video.data as any, mediaType, `${mediaType}/mp4`, videoTitle);
         if (sentMessage == undefined) {
             return await message.react("❌");
         }

@@ -6,16 +6,16 @@
         "moduleResolution": "node",
         "esModuleInterop": false,
         "declaration": true,
-        "outDir": "dist",
+        "outDir": "modules",
         "strict": true,
     },
-    "include": ["src/**/*", "libs/**/*", "entrypoint.ts", "@types/**/*"],
+    "include": ["src/**/*", "entrypoint.ts"],
     "exclude": [
         "node_modules",
         "tools",
-        "dist"
+        "dist",
+        "modules"
     ],
-    "outFile": "./dist/compiled.ts",
     "resolve": {
         "extensions": [".ts", ".js", ".d.ts"]
     }
