@@ -1,5 +1,5 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
-import {KamTube} from "@kamuridesu/kamtube";
+import {KamTube, SearchAPIResponse} from "@kamuridesu/kamtube";
 import { Letras } from "@kamuridesu/simplelyrics";
 
 export async function download(message: IMessage, args: string[], video_audio = "mixed") {
@@ -13,7 +13,7 @@ export async function download(message: IMessage, args: string[], video_audio = 
     await message.react("🔍");
 
     const youtube = new KamTube();
-    let argument: any = args.join(" ");
+    let argument: string= args.join(" ");
 
     let videoId = "";
     let videoTitle = "";
@@ -21,18 +21,23 @@ export async function download(message: IMessage, args: string[], video_audio = 
     const regex = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
     if (!regex.test(argument)) {
         try {
+            let result: SearchAPIResponse;
             let c = 0;
             const results = (await youtube.search(argument));
+            if (!results) {
+                await message.react("❌");
+                return await message.replyText("Erro! Nenhum vídeo encontrado!");
+            }
             do {
-                argument = results[c];
+                result = results[c];
                 c++;
                 if (c == results.length) {
                     await message.react("❌");
-                    return await message.replyText("Erro! Nenhum vídeo encontrado!")
+                    return await message.replyText("Erro! Nenhum vídeo encontrado!");
                 }
-            } while (argument.type == "channel" || argument.type == "playlist");
-            videoId = argument.videoId;
-            videoTitle = argument.title;
+            } while (result.type == "channel" || result.type == "playlist");
+            videoId = result.videoId as string;
+            videoTitle = result.title as string;
         } catch (e) {
             console.log(e);
             await message.react("❌");
