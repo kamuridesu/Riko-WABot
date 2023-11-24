@@ -1,12 +1,12 @@
 import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { createSticker } from "@kamuridesu/whatframework/libs/sticker.js";
-
+import { Emojis } from "../utils/emoji.js";
 import { GPT } from "../utils/gpt.js";
 
 const gptInstance = new GPT();
 
 export async function makeSticker(bot: IBot, message: IMessage, args: string[]) {
-    await message.react("⏳");
+    await message.react(Emojis.waiting);
     let packname = "Riko's stickers collection";
     let author = "Riko Bot";
 
@@ -19,7 +19,7 @@ export async function makeSticker(bot: IBot, message: IMessage, args: string[]) 
             author = args[1];
         }
     }
-    await message.react("✅");
+    await message.react(Emojis.success);
 
     return createSticker(message, bot, author, packname)
 }
@@ -56,7 +56,7 @@ export async function nivelGado(message: IMessage) {
         "Mestre dos Chifrudos"
     ];
     let choice = `Você é:\n\n${messages[Math.floor(Math.random() * messages.length)]}`;
-    await message.react("✅");
+    await message.react(Emojis.success);
     return await message.replyText(choice);
 }
 
@@ -85,7 +85,7 @@ export async function slot(message: IMessage) {
 ╚════ ≪ •❈• ≫ ═══╝
 
 ${_message}`
-    await message.react("✅");
+    await message.react(Emojis.success);
     return message.replyText(slot_message);
 }
 
@@ -101,7 +101,7 @@ export async function nivelGay(message: IMessage) {
     const percentage = Math.round(Math.random() * 100);
     const index = percentage <= 10 ? 0 : (percentage > 10 && percentage <= 20 ? 1 : (percentage > 20 && percentage <= 30 ? 2 : (percentage > 30 && percentage <= 40 ? 3 : (percentage > 40 && percentage <= 50 ? 4 : 5))));
     const response = `Você é ${percentage}% gay\n\n${responses[index]}`;
-    await message.react("✅");
+    await message.react(Emojis.success);
     return message.replyText(response);
 }
 
@@ -116,7 +116,7 @@ export async function chanceDe(message: IMessage, args: string[]) {
         }
         return await message.replyText("A chance " + text + " é de " + Math.round(Math.random() * 100) + "%");
     }
-    await message.react("✅");
+    await message.react(Emojis.success);
     return await message.replyText(error);
 }
 
@@ -128,7 +128,7 @@ export async function perc(message: IMessage, args: string[]) {
         const text = args.join(" ");
         return await message.replyText("Você é " + Math.round(Math.random() * 100) + "% " + text);
     }
-    await message.react("✅");
+    await message.react(Emojis.success);
     return await message.replyText(error);
 }
 
@@ -148,7 +148,7 @@ export async function casal(message: IMessage, bot: IBot) {
     const sliced = shuffled.slice(0, 2);
 
     let _message = "❤️❤️ Meu casal ❤️❤️\n\n" + `${sliced[0].id} + ${sliced[1].id}`;
-    await message.react("✅");
+    await message.react(Emojis.success);
     message.replyText(_message);
 }
 

@@ -71,6 +71,12 @@ export function registerCommands(handler: CommandHandler) {
                 aliases: ["vid"],
                 func: (_: IBot, message: IMessage, args: string[]) => {media.thumbnail(message, args)}
             },
+            {
+                name: "anime",
+                description: "Download anime",
+                aliases: [],
+                func: (_: IBot, message: IMessage, args: string[]) => {media.getAnime(message, args.join(" "))}
+            }
         ]
     }
     

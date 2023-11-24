@@ -1,5 +1,6 @@
 import { IMessage } from '@kamuridesu/whatframework/@types/types.js';
 import axios from 'axios';
+import { Emojis } from './emoji.js';
 
 interface MessageData {
     message: IMessage;
@@ -57,7 +58,7 @@ export class GPT {
         try {
             const response = await axios.post(
                 `http://${gptURL}/api/generate`,
-                `{\n  "model": "mistral",\n  "prompt":"${messageText}"\n }`,
+                `{\n  "model": "chatbot",\n  "prompt":"${messageText}"\n }`,
                 {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -75,9 +76,9 @@ export class GPT {
                 }
             }
             message.message.replyText(responseText);
-            message.message.react("✅");
+            message.message.react(Emojis.success);
         } catch (e) {
-            message.message.react("❌");
+            message.message.react(Emojis.fail);
             message.message.replyText("Erro!");
         }
         message.done = true;

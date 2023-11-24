@@ -1,4 +1,5 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
+import { Emojis } from "../utils/emoji.js";
 
 export async function mentionAll(message: IMessage, args: string[]) {
     if (!message.chatIsGroup) {
@@ -11,7 +12,7 @@ export async function mentionAll(message: IMessage, args: string[]) {
         return message.replyText("Erro! Preciso de alguma mensagem!");
     }
     const membersIds = message.group?.members.map(member => member.id);
-    await message.react("✅");
+    await message.react(Emojis.success);
     return await message.replyText(args.join(" "), {
         mentions: membersIds
     });

@@ -6,3 +6,5 @@ temp/
 test_modules
 modules
 *test*
+proxychains.conf
+.env
