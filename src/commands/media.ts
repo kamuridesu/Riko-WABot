@@ -140,6 +140,7 @@ export async function getAnime(message: IMessage, textMessage: string) {
         await message.replyMedia(data.data as any, "video", "video/mp4", `${data.title} - ${ep}`);
         return await message.react(Emojis.success);
     } catch (e) {
+        console.log(e);
         message.react(Emojis.fail);
         return message.replyText(String(e));
     }
