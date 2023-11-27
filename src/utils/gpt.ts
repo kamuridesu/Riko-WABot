@@ -28,7 +28,7 @@ export class GPT {
 
     async process() {
         if (this.interval == undefined) {
-            const interval = setInterval( async () => {
+            const interval = setInterval(async () => {
                 let promises: Promise<void>[] = [];
                 this.fila = this.fila.filter(item => !item.done);
                 if (this.fila.filter(item => item.running).length < this.maxMessage) {

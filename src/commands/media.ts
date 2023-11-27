@@ -1,5 +1,6 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import {KamTube, SearchAPIResponse} from "@kamuridesu/kamtube";
+import { urlParse } from "@kamuridesu/kamtube/src/parsers.js";
 import { Letras } from "@kamuridesu/simplelyrics";
 import { Anime } from "@kamuridesu/kamuanimejs/dist/src/anime.js";
 import { Emojis } from "../utils/emoji.js";
@@ -46,6 +47,8 @@ export async function download(message: IMessage, args: string[], video_audio = 
             await message.react(Emojis.fail);
             return await message.replyText("Houve um erro ao processar!");
         }
+    } else {
+        videoId = urlParse(argument);
     }
 
     await message.react(Emojis.waiting);

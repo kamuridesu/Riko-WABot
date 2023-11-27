@@ -25,7 +25,7 @@ export function registerCommands(handler: CommandHandler) {
                 name: "test",
                 description: "teste",
                 aliases: [],
-                func: (_, message: IMessage) => {message.replyText("testando 1 2 3", {})}
+                func: (bot, message: IMessage) => {info.test(bot, message)}
             },
             {
                 name: "bug",

@@ -22,3 +22,7 @@ export async function bug(message: IMessage, bot: IBot, args: string[]) {
     await message.react(Emojis.success);
     return await message.replyText("Bug reportado com sucesso!");
 }
+
+export async function test(bot: IBot, message: IMessage) {
+    await bot.createPoll(message, "test", ["1", "2"]);
+}

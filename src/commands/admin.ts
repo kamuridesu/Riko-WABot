@@ -1,13 +1,22 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { Emojis } from "../utils/emoji.js";
+import { IBot } from "@kamuridesu/whatframework/@types/types.js";
 
-export async function mentionAll(message: IMessage, args: string[]) {
+async function validate(message: IMessage) {
+    let returnValue = true;
     if (!message.chatIsGroup) {
-        return message.replyText("Erro! Este comando pode ser usado apenas em groupos!");
+        message.replyText("Erro! Este comando pode ser usado apenas em groupos!");
+        returnValue = false;
     }
     if (!message.author.isAdmin) {
-        return message.replyText("Erro! Apenas ADMINs podem usar este comando!");
+        message.replyText("Erro! Apenas ADMINs podem usar este comando!");
+        returnValue = false;
     }
+    return returnValue;
+}
+
+export async function mentionAll(message: IMessage, args: string[]) {
+    if (!validate(message)) return;
     if (args.length <= 0) {
         return message.replyText("Erro! Preciso de alguma mensagem!");
     }

@@ -9,7 +9,7 @@ async function sed(bot: IBot, message: string, context: IMessage) {
         }
         const [, searchPattern, replacement, flags] = match;
         const regex = new RegExp(searchPattern, flags || '');
-        const modifiedMessage = context.quotedMessage.message.conversation.replace(regex, replacement);
+        const modifiedMessage = context.quotedMessage?.body.replace(regex, replacement)!;
         const quoted: any = (await bot.loadMessage(context));
         if (quoted) {
             const options = {
