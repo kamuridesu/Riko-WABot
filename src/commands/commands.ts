@@ -142,6 +142,18 @@ export function registerCommands(handler: CommandHandler) {
                 description: "Marca todos os membros do chat",
                 aliases: ["all"],
                 func: (_: IBot, message: IMessage, args: string[]) => {admin.mentionAll(message, args)}
+            },
+            {
+                name: "rebaixar",
+                description: "Remove um usuário da lista de admins",
+                aliases: ["demote"],
+                func: (_, message) => {admin.demote(message)}
+            },
+            {
+                name: "promover",
+                description: "Adiciona um usuário à lista de admins",
+                aliases: ["promote"],
+                func: (_, message) => {admin.promote(message)}
             }
         ]
     }
