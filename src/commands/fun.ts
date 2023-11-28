@@ -154,7 +154,6 @@ export async function casal(message: IMessage, bot: IBot) {
 
 export async function gpt(message: IMessage, args: string[]) {
     if (args == undefined) return message.replyText("A mensagem não pode ser vazia!");
-    console.log(message.body)
-    await message.replyText("Gerando resposta...");
+    await message.react(Emojis.waiting);
     return gptInstance.generate(message);
 }

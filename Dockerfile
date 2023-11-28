@@ -1,5 +1,5 @@
 FROM node:18-alpine as build
-RUN apt install git
+RUN apk add git
 WORKDIR /app
 COPY ./package.json .
 RUN npm install --include=dev
@@ -12,7 +12,7 @@ RUN apk add git
 COPY ./package.json .
 RUN npm i
 
-FROM node:18-alpine
+FROM node:18-alpine as run
 WORKDIR /app
 RUN apk add ffmpeg libwebp-tools
 COPY --from=deps /app/ .

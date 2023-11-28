@@ -15,7 +15,7 @@
     "@kamuridesu/kamtube": "^0.1.21",
     "@kamuridesu/kamuanimejs": "^1.0.5",
     "@kamuridesu/simplelyrics": "^1.0.2",
-    "@kamuridesu/whatframework": "^0.1.2-9.1b",
+    "@kamuridesu/whatframework": "^0.1.30-b",
     "axios": "^1.6.0",
     "link-preview-js": "^3.0.4"
   },

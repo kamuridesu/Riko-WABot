@@ -97,7 +97,9 @@ export async function thumbnail(message: IMessage, args: string[]) {
             }
             argument = id;
         } else if (argument.includes("youtube.com")) {
-            argument = argument.replace("youtube.com/watch?=", "");
+            if (argument.includes("shorts")) {
+                argument = argument.split("/")[3];
+            } else argument = argument.replace("youtube.com/watch?=", "");
         }
         try {
             let thumbnail = await youtube.getThumbnail(argument);

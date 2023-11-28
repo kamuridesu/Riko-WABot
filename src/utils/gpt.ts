@@ -65,7 +65,9 @@ export class GPT {
                     }
                 }
             );
+            const sentMessage = await message.message.replyText(" ");
             let responseText = "";
+            let counter = 0;
             for (let line of response.data.split("\n")) {
                 line = line.trim();
                 if (line) {
@@ -73,9 +75,13 @@ export class GPT {
                     if (responseJSON.response != undefined) {
                         responseText += JSON.parse(line).response;
                     }
+                    if (counter % 50 == 0) {
+                        await sentMessage?.edit(responseText);
+                    }
                 }
+                counter++;
             }
-            message.message.replyText(responseText);
+            await sentMessage?.edit(responseText);
             message.message.react(Emojis.success);
         } catch (e) {
             message.message.react(Emojis.fail);
