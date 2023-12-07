@@ -1,6 +1,7 @@
 import { IMessage } from '@kamuridesu/whatframework/@types/types.js';
 import axios from 'axios';
 import { Emojis } from './emoji.js';
+import { parseMessageToModelAndMessage } from './parsers.js';
 
 interface MessageData {
     message: IMessage;
@@ -54,11 +55,12 @@ export class GPT {
 
     async generateTextReply(message: MessageData) {
         message.running = true;
-        const messageText = message.message.body.split(' ').slice(1).join(" ").replace(/\n/gi, ". ");
+        const { prompt, model } = parseMessageToModelAndMessage(message.message.body)
+        const messageText = prompt.split(' ').slice(1).join(" ").replace(/\n/gi, ". ");
         try {
             const response = await axios.post(
                 `http://${gptURL}/api/generate`,
-                `{\n  "model": "chatbot",\n  "prompt":"${messageText}"\n }`,
+                `{\n  "model": "${model}",\n  "prompt":"${messageText}"\n }`,
                 {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
