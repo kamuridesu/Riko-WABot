@@ -47,28 +47,24 @@ export async function mentionAll(message: IMessage, args: string[]) {
     });
 }
 
-export async function demote(message: IMessage) {
-    if (! (await validateIsGroupAndAdmin(message))) return;
-    if (! (await validateBotIsAdmin(message))) return;
+async function changeRole(message: IMessage, action: 'promote' | 'demote') {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (!(await validateBotIsAdmin(message))) return;
+
     if (message.mentionedUsers.length < 1 && !message.hasQuotedMessage) {
         message.react(Emojis.fail);
         return await message.replyText("Erro! Preciso que algum usuário seja mencionado!");
     }
 
     let errorMessage = "";
-    if (message.mentionedUsers.length > 0) {
-        for (let user of message.mentionedUsers) {
-            const demoteReturn = (await __demote(user, message));
-            if (demoteReturn != undefined) {
-                errorMessage += demoteReturn;
+    const users = [...message.mentionedUsers, message.quotedMessage?.author?.jid].filter(Boolean);
+
+    for (let user of users) {
+        if (user) {
+            const result = await updateRole(user, message, action);
+            if (result != undefined) {
+                errorMessage += result;
             }
-        }
-    }
-    if (message.quotedMessage?.author) {
-        let user = message.quotedMessage.author.jid;
-        const demoteReturn = (await __demote(user, message));
-        if (demoteReturn != undefined) {
-            errorMessage += demoteReturn;
         }
     }
 
@@ -79,50 +75,14 @@ export async function demote(message: IMessage) {
     await message.react(Emojis.success);
 }
 
-async function __demote(user: string, message: IMessage) {
-    if (!message.group?.admins.map(e => e.id).includes(user)) {
-        return `\nUsuário ${user} não é admin!`;
+async function updateRole(user: string, message: IMessage, action: 'promote' | 'demote') {
+    const isAdmin = message.group?.admins.map(e => e.id).includes(user);
+    if ((isAdmin && action === 'promote') || (!isAdmin && action === 'demote')) {
+        return `\nUsuário ${user} ${action === 'promote' ? 'é' : 'não é'} admin!`;
     } else {
-        await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, [user], "demote");
+        await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, [user], action);
     }
 }
 
-export async function promote(message: IMessage) {
-    if (! (await validateIsGroupAndAdmin(message))) return;
-    if (! (await validateBotIsAdmin(message))) return;
-    if (message.mentionedUsers.length < 1 && !message.hasQuotedMessage) {
-        message.react(Emojis.fail);
-        return await message.replyText("Erro! Preciso que algum usuário seja mencionado!");
-    }
-
-    let errorMessage = "";
-    if (message.mentionedUsers.length > 0) {
-        for (let user of message.mentionedUsers) {
-            const demoteReturn = (await __promote(user, message));
-            if (demoteReturn != undefined) {
-                errorMessage += demoteReturn;
-            }
-        }
-    }
-    if (message.quotedMessage?.author) {
-        let user = message.quotedMessage.author.jid;
-        const demoteReturn = (await __promote(user, message));
-        if (demoteReturn != undefined) {
-            errorMessage += demoteReturn;
-        }
-    }
-
-    if (errorMessage != "") {
-        await message.react(Emojis.fail);
-        return await message.replyText(errorMessage);
-    }
-    await message.react(Emojis.success);
-}
-
-async function __promote(user: string, message: IMessage) {
-    if (message.group?.admins.map(e => e.id).includes(user)) {
-        return `\nUsuário ${user} é admin!`;
-    } else {
-        await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, [user], "promote");
-    }
-}
+export const demote = (message: IMessage) => changeRole(message, 'demote');
+export const promote = (message: IMessage) => changeRole(message, 'promote');
