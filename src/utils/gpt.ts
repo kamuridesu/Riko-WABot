@@ -9,13 +9,15 @@ interface MessageData {
     running: boolean;
 }
 
-const gptURL = process.env.GPT_HOST ? process.env.GPT_HOST : "localhost:11434"
+const GPTURL = process.env.GPT_HOST;
+export const IS_GPT_ENABLED = GPTURL != undefined ? true : false
 
 export class GPT {
     fila: MessageData[] = [];
     maxMessage = 2;
     running = 0;
     interval: NodeJS.Timeout | undefined = undefined;
+    isGPTEnabled = IS_GPT_ENABLED
 
     async generate(message: IMessage) {
         const messageData = {
@@ -59,7 +61,7 @@ export class GPT {
         const messageText = prompt.split(' ').slice(1).join(" ").replace(/\n/gi, ". ");
         try {
             const response = await axios.post(
-                `http://${gptURL}/api/generate`,
+                `http://${GPTURL}/api/generate`,
                 `{\n  "model": "${model}",\n  "prompt":"${messageText}"\n }`,
                 {
                     headers: {
