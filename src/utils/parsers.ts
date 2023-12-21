@@ -9,7 +9,6 @@ function parseArgument(message: string, argument: string) {
     }
 }
 
-
 export function parseMessageToNameAndEpisode(message: string) {
     let { arg, message: msg } = parseArgument(message, "ep=");
     if (!arg) {

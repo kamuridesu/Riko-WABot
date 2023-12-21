@@ -131,6 +131,12 @@ export function registerCommands(handler: CommandHandler) {
                 aliases: ["prompt"],
                 func: (_: IBot, message: IMessage, args: string[]) => {diversao.gpt(message, args)}
             },
+            {
+                name: "copy",
+                description: "Copia uma midia",
+                aliases: [],
+                func: (_, message: IMessage) => {diversao.copyMedia(message)}
+            }
         ]
     }
 

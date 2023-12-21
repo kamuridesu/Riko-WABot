@@ -17,6 +17,7 @@
     "@kamuridesu/simplelyrics": "^1.0.2",
     "@kamuridesu/whatframework": "^0.1.31-b",
     "axios": "^1.6.2",
+    "jimp": "^0.16.13",
     "link-preview-js": "^3.0.4"
   },
   "devDependencies": {

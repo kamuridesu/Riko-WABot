@@ -1,3 +1,4 @@
+import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { createSticker } from "@kamuridesu/whatframework/libs/sticker.js";
 import { Emojis } from "../utils/emoji.js";
@@ -157,4 +158,17 @@ export async function gpt(message: IMessage, args: string[]) {
     if (!gptInstance.isGPTEnabled) return message.replyText("GPT não está configurado!")
     await message.react(Emojis.waiting);
     return gptInstance.generate(message);
+}
+
+export async function copyMedia(message: IMessage) {
+    await message.react(Emojis.waiting);
+    if (!["imageMessage", "videoMessage"].includes(message.quotedMessageType)) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Mensagem não é video ou imagem!");
+    }
+    const messageMedia = message.hasQuotedMessage ? JSON.parse(JSON.stringify(message.originalMessage).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : message.originalMessage;
+    const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
+    const type: string = message.quotedMessageType.replace("Message", "");
+    await message.replyMedia(mediaBuffer as any, type, type == "image" ? "image/jpg" : "video/mp4");
+    await message.react(Emojis.success);
 }

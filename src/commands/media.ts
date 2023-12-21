@@ -79,37 +79,31 @@ export async function download(message: IMessage, args: string[], video_audio = 
 }
 
 export async function thumbnail(message: IMessage, args: string[]) {
-    let error = "Erro desconhecido";
     if (args.length < 1) {
-        error = "Error! Preciso que uma url seja passada!";
-    } else if (args.length > 1) {
-        error = "Error! Muitos argumentos!";
-    } else if (/[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi.test(args.join(" "))) {
-        let youtube = new KamTube();
-        let argument = args.join(" ");
-        if (argument.includes("youtu.be")) {
-            const argumentSplit = argument.split("/");
-            let id: string | number = 0;
-            if ("shorts" in argumentSplit) {
-                id = argument[4];
-            } else {
-                id = argument[3];
-            }
-            argument = id;
-        } else if (argument.includes("youtube.com")) {
-            if (argument.includes("shorts")) {
-                argument = argument.split("/")[3];
-            } else argument = argument.replace("youtube.com/watch?=", "");
-        }
-        try {
-            let thumbnail = await youtube.getThumbnail(argument);
-            return await message.replyMedia(thumbnail as string, "image");
-        } catch (e) {
-            await message.react(Emojis.fail);
-            error = "Error! Não foi possível encontrar o thumbnail!";
-        }
+        await message.react(Emojis.fail);
+        return await message.replyText("Faltando link da imagem!")
     }
-    return await message.replyText(error);
+    if (args.length > 1) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Mais de um argumento recebido!");
+    }
+    const argument = args.join(" ");
+    const regex = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
+    if (!regex.test(argument)) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Link inválido!");
+    }
+    try {
+        const youtube = new KamTube();
+        const videoId = urlParse(argument);
+        const thumb = await youtube.getThumbnail(videoId);
+        if (!thumb) throw new Error("Thumb não encontrada!");
+        await message.replyMedia({image: thumb} as any, "image", "image/jpg");
+        return await message.react(Emojis.success);
+    } catch (e) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Erro ao enviar imagem");
+    }
 }
 
 export async function getLyrics(message: IMessage, args: string[]) {
