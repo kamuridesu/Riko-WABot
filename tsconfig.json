@@ -8,6 +8,7 @@
         "declaration": true,
         "outDir": "modules",
         "strict": true,
+        "noImplicitAny": false
     },
     "include": ["src/**/*", "entrypoint.ts"],
     "exclude": [

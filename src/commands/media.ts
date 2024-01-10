@@ -5,6 +5,7 @@ import { Letras } from "@kamuridesu/simplelyrics";
 import { Anime } from "@kamuridesu/kamuanimejs/dist/src/anime.js";
 import { Emojis } from "../utils/emoji.js";
 import { parseMessageToNameAndEpisode } from "../utils/parsers.js";
+import { NekosAPIAxiosProxy, fetchResponse } from "../utils/nekoapi.js";
 
 export async function download(message: IMessage, args: string[], video_audio = "mixed") {
     if (args.length < 1) {
@@ -53,7 +54,12 @@ export async function download(message: IMessage, args: string[], video_audio = 
 
     await message.react(Emojis.waiting);
 
-    let video = null;
+    let video: {
+        title: string;
+        type: string;
+        extension: string;
+        data: ArrayBuffer;
+    } | null = null;
 
     try {
         video = await youtube.download(videoId, video_audio, video_audio == "audio" ? undefined : "360");
@@ -142,5 +148,19 @@ export async function getAnime(message: IMessage, textMessage: string) {
         console.log(e);
         message.react(Emojis.fail);
         return message.replyText(String(e));
+    }
+}
+
+export async function randomImage(message: IMessage) {
+    const api = new NekosAPIAxiosProxy();
+    await message.react(Emojis.searching);
+    try {
+        const image = await api.getRandomImage();
+        const webpImage: any = await fetchResponse(new URL(image.image_url), true);
+        await message.bot.connection?.sendMessage(message.author.chatJid, {image: webpImage});
+        await message.react(Emojis.success);
+    } catch (e) {
+        await message.replyText("Erro! Algo deu errado!");
+        await message.react(Emojis.fail);
     }
 }

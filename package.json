@@ -16,12 +16,14 @@
     "@kamuridesu/kamuanimejs": "^1.0.5",
     "@kamuridesu/simplelyrics": "^1.0.2",
     "@kamuridesu/whatframework": "^0.1.31-b",
-    "axios": "^1.6.2",
+    "axios": "^1.6.5",
     "jimp": "^0.16.13",
-    "link-preview-js": "^3.0.4"
+    "link-preview-js": "^3.0.4",
+    "nekosapi": "^0.5.2",
+    "socks-proxy-agent": "^8.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.9.0",
+    "@types/node": "^20.10.8",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"
   }

@@ -76,6 +76,12 @@ export function registerCommands(handler: CommandHandler) {
                 description: "Download anime",
                 aliases: [],
                 func: (_: IBot, message: IMessage, args: string[]) => {media.getAnime(message, args.join(" "))}
+            },
+            {
+                name: "randomImage",
+                description: "Envia uma imagem aleatoria",
+                aliases: ["rdi", "image"],
+                func: (_, message) => {media.randomImage(message)}
             }
         ]
     }
@@ -160,6 +166,12 @@ export function registerCommands(handler: CommandHandler) {
                 description: "Adiciona um usuário à lista de admins",
                 aliases: ["promote"],
                 func: (_, message) => {admin.promote(message)}
+            },
+            {
+                name: "transmitir",
+                description: "Transmitir uma mensagem para todos os grupos em que o bot está",
+                aliases: ["bc", "broadcast"],
+                func: (bot, message, args) => {admin.broadcastToGroups(bot, message, args)}
             }
         ]
     }

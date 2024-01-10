@@ -34,6 +34,16 @@ async function validateIsGroupAndAdmin(message: IMessage) {
     return returnValue;
 }
 
+async function isOwner(message: IMessage) {
+    let returnValue = true;
+    if (message.author.jid != message.bot.ownerNumber + "@s.whatsapp.net") {
+        await message.react(Emojis.fail);
+        await message.replyText("Erro! Este comando pode ser usado apenas pelo DONO!");
+        returnValue = false;
+    }
+    return returnValue;
+}
+
 export async function mentionAll(message: IMessage, args: string[]) {
     if (!(await validateIsGroupAndAdmin(message))) return;
     if (args.length <= 0) {
@@ -82,6 +92,24 @@ async function updateRole(user: string, message: IMessage, action: 'promote' | '
     } else {
         await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, [user], action);
     }
+}
+
+export async function broadcastToGroups(bot: IBot, message: IMessage, args: string[]) {
+    if (!(await isOwner(message))) return;
+    if (args.length < 1) return await message.replyText("Erro! Preciso de um texto para enviar!")
+    const unparsedAllGroups = await bot.connection?.groupFetchAllParticipating();
+    if (unparsedAllGroups) {
+        const allGroups = Object.entries(unparsedAllGroups).slice(0).map(entry => entry[1])
+        const promises: Promise<any>[] = []
+        for (let chat of allGroups) {
+            console.log(chat.id);
+            const promise = bot.sendTextMessage(chat.id, args.join(" "), {});
+            promises.push(promise);
+        }
+        await Promise.all(promises);
+        return await message.replyText("Transmissão enviada com sucesso!");
+    }
+    return await message.replyText("Erro!")
 }
 
 export const demote = (message: IMessage) => changeRole(message, 'demote');
