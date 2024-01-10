@@ -169,6 +169,6 @@ export async function copyMedia(message: IMessage) {
     const messageMedia = message.hasQuotedMessage ? JSON.parse(JSON.stringify(message.originalMessage).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : message.originalMessage;
     const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
     const type: string = message.quotedMessageType.replace("Message", "");
-    await message.replyMedia(mediaBuffer as any, type, type == "image" ? "image/jpg" : "video/mp4");
+    await message.replyMedia(mediaBuffer as any, type);
     await message.react(Emojis.success);
 }

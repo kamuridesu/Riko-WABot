@@ -157,7 +157,7 @@ export async function randomImage(message: IMessage) {
     try {
         const image = await api.getRandomImage();
         const webpImage: any = await fetchResponse(new URL(image.image_url), true);
-        await message.bot.connection?.sendMessage(message.author.chatJid, {image: webpImage});
+        await message.replyMedia(webpImage, "image", "");
         await message.react(Emojis.success);
     } catch (e) {
         await message.replyText("Erro! Algo deu errado!");
