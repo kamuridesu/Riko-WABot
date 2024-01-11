@@ -81,8 +81,21 @@ export function registerCommands(handler: CommandHandler) {
                 name: "randomImage",
                 description: "Envia uma imagem aleatoria",
                 aliases: ["rdi", "image"],
-                func: (_, message) => {media.randomImage(message)}
-            }
+                func: (_, message, args) => {media.getImageNekosApi(message, args)}
+            },
+            {
+                name: "tagsfw",
+                description: "Envia todas as tags para imagens",
+                aliases: ["tagsfw"],
+                func: (_, message) => {media.getImagesTags(message)}
+            },
+            {
+                name: "tagnsfw",
+                description: "Envia todas as tags para imagens",
+                aliases: ["tagnsfw"],
+                func: (_, message) => {media.getImagesTags(message, true)}
+            },
+            
         ]
     }
     

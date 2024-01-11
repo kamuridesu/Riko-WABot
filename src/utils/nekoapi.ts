@@ -2,6 +2,8 @@ import {NekosAPI} from "nekosapi/v3/index.js";
 import { Socks5Proxy } from "./config.js";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import axios, { AxiosResponse } from "axios";
+import { IMessage } from "@kamuridesu/whatframework/@types/message.js";
+import { Emojis } from "./emoji.js";
 
 function checkResponseCode(response: AxiosResponse<any, any>) {
     if ((response.status > 200 && response.status <= 300)) {
@@ -32,5 +34,19 @@ export class NekosAPIAxiosProxy extends NekosAPI {
         super();
         (this as any).checkResponseCode = checkResponseCode;
         (this as any).fetchResponse = fetchResponse;
+    }
+}
+
+
+export async function getRandomImageFromApi(message: IMessage, api: NekosAPIAxiosProxy) {
+    await message.react(Emojis.searching);
+    try {
+        const image = await api.getRandomImage();
+        const webpImage: any = await fetchResponse(new URL(image.image_url), true);
+        await message.replyMedia(webpImage, "image", "");
+        await message.react(Emojis.success);
+    } catch (e) {
+        await message.replyText("Erro! Algo deu errado!");
+        await message.react(Emojis.fail);
     }
 }

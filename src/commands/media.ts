@@ -5,7 +5,8 @@ import { Letras } from "@kamuridesu/simplelyrics";
 import { Anime } from "@kamuridesu/kamuanimejs/dist/src/anime.js";
 import { Emojis } from "../utils/emoji.js";
 import { parseMessageToNameAndEpisode } from "../utils/parsers.js";
-import { NekosAPIAxiosProxy, fetchResponse } from "../utils/nekoapi.js";
+import { NekosAPIAxiosProxy, fetchResponse, getRandomImageFromApi } from "../utils/nekoapi.js";
+import { TagNames, Tags } from "nekosapi/v3/types/Tags.js";
 
 export async function download(message: IMessage, args: string[], video_audio = "mixed") {
     if (args.length < 1) {
@@ -151,16 +152,42 @@ export async function getAnime(message: IMessage, textMessage: string) {
     }
 }
 
-export async function randomImage(message: IMessage) {
+export async function getImageNekosApi(message: IMessage, args: string[]) {
     const api = new NekosAPIAxiosProxy();
-    await message.react(Emojis.searching);
+    if (args.length < 1) {
+        return await getRandomImageFromApi(message, api);
+    }
+    let capitalizedTags: TagNames[] = [];
+    message.react(Emojis.searching);
+    for (let tag of args) {
+        const capitalizedTag = tag.charAt(0).toUpperCase() + tag.slice(1)
+        capitalizedTags.push(capitalizedTag as unknown as TagNames);
+        if (!Object.keys(Tags).includes(capitalizedTag)) {
+            message.react(Emojis.fail);
+            return await message.replyText("Erro! Tag não encontrada!");
+        }
+    }
+    const images = await api.getImages(capitalizedTags);
+    const image = images[Math.round(Math.random() * images.length)];
+    if (image == undefined) {
+        message.react(Emojis.fail);
+        return await message.replyText("Erro! Imagem não encontrada!");
+    }
+    const dwldImage: any = await fetchResponse(new URL(image.image_url), true);
+    await message.replyMedia(dwldImage, "image");
+    message.react(Emojis.success);
+}
+
+export async function getImagesTags(message: IMessage, isNsfw = false) {
+    const api = new NekosAPIAxiosProxy();
+    message.react(Emojis.searching);
     try {
-        const image = await api.getRandomImage();
-        const webpImage: any = await fetchResponse(new URL(image.image_url), true);
-        await message.replyMedia(webpImage, "image", "");
-        await message.react(Emojis.success);
+        const tags = (await api.getAllTags()).filter(tag => tag.is_nsfw == isNsfw);
+        const allTags = tags.map(tag => tag.name).join("\n");
+        message.react(Emojis.success);
+        await message.replyText(allTags);
     } catch (e) {
-        await message.replyText("Erro! Algo deu errado!");
-        await message.react(Emojis.fail);
+        message.react(Emojis.fail);
+        await message.replyText("Algo deu errado!");
     }
 }
