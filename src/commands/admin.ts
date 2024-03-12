@@ -23,7 +23,7 @@ async function validateIsGroupAndAdmin(message: IMessage) {
     let returnValue = true;
     if (!message.chatIsGroup) {
         await message.react(Emojis.fail);
-        await message.replyText("Erro! Este comando pode ser usado apenas em groupos!");
+        await message.replyText("Erro! Este comando pode ser usado apenas em grupos!");
         returnValue = false;
     }
     if (!message.author.isAdmin) {
@@ -46,15 +46,21 @@ async function isOwner(message: IMessage) {
 
 export async function mentionAll(message: IMessage, args: string[]) {
     if (!(await validateIsGroupAndAdmin(message))) return;
-    if (args.length <= 0) {
+    if (args.length <= 0 && (!message.hasQuotedMessage)) {
         await message.react(Emojis.fail);
         return await message.replyText("Erro! Preciso de alguma mensagem!");
     }
     const membersIds = message.group?.members.map(member => member.id);
-    await message.react(Emojis.success);
-    return await message.replyText(args.join(" "), {
+    if (message.quotedMessage) {
+        await message.bot.sendTextMessage(
+            message.author.chatJid, args.join(" "), {quoted: message.quotedMessage.originalMessage, mentions: membersIds}
+        );
+        return await message.react(Emojis.success);
+    }
+    await message.replyText(args.join(" "), {
         mentions: membersIds
     });
+    return await message.react(Emojis.success);
 }
 
 async function changeRole(message: IMessage, action: 'promote' | 'demote') {
@@ -102,7 +108,7 @@ export async function broadcastToGroups(bot: IBot, message: IMessage, args: stri
         const allGroups = Object.entries(unparsedAllGroups).slice(0).map(entry => entry[1])
         const promises: Promise<any>[] = []
         for (let chat of allGroups) {
-            console.log(chat.id);
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const promise = bot.sendTextMessage(chat.id, args.join(" "), {});
             promises.push(promise);
         }

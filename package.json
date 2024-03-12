@@ -13,13 +13,13 @@
   "type": "module",
   "dependencies": {
     "@kamuridesu/kamtube": "^0.1.21",
-    "@kamuridesu/kamuanimejs": "^1.0.5",
+    "@kamuridesu/kamuanimejs": "^1.0.6",
     "@kamuridesu/simplelyrics": "^1.0.2",
-    "@kamuridesu/whatframework": "^0.1.31-b",
+    "@kamuridesu/whatframework": "^0.1.37-b",
     "axios": "^1.6.5",
     "jimp": "^0.16.13",
     "link-preview-js": "^3.0.4",
-    "nekosapi": "^0.5.2",
+    "nekosapi": "0.5.2",
     "socks-proxy-agent": "^8.0.2"
   },
   "devDependencies": {

@@ -8,7 +8,8 @@
         "declaration": true,
         "outDir": "modules",
         "strict": true,
-        "noImplicitAny": false
+        "noImplicitAny": false,
+        "allowSyntheticDefaultImports": true
     },
     "include": ["src/**/*", "entrypoint.ts"],
     "exclude": [

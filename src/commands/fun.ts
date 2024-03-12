@@ -20,9 +20,13 @@ export async function makeSticker(bot: IBot, message: IMessage, args: string[]) 
             author = args[1];
         }
     }
-    await message.react(Emojis.success);
 
-    return createSticker(message, bot, author, packname)
+    try {
+        await createSticker(message, bot, author, packname)
+        return await message.react(Emojis.success);
+    } catch (e) {
+        return await message.react(Emojis.fail);
+    }
 }
 
 export async function nivelGado(message: IMessage) {
@@ -57,8 +61,8 @@ export async function nivelGado(message: IMessage) {
         "Mestre dos Chifrudos"
     ];
     let choice = `Você é:\n\n${messages[Math.floor(Math.random() * messages.length)]}`;
+    await message.replyText(choice);
     await message.react(Emojis.success);
-    return await message.replyText(choice);
 }
 
 export async function slot(message: IMessage) {
@@ -86,8 +90,8 @@ export async function slot(message: IMessage) {
 ╚════ ≪ •❈• ≫ ═══╝
 
 ${_message}`
-    await message.react(Emojis.success);
     return message.replyText(slot_message);
+    await message.react(Emojis.success);
 }
 
 export async function nivelGay(message: IMessage) {
@@ -117,8 +121,8 @@ export async function chanceDe(message: IMessage, args: string[]) {
         }
         return await message.replyText("A chance " + text + " é de " + Math.round(Math.random() * 100) + "%");
     }
+    await message.replyText(error);
     await message.react(Emojis.success);
-    return await message.replyText(error);
 }
 
 export async function perc(message: IMessage, args: string[]) {
@@ -127,10 +131,12 @@ export async function perc(message: IMessage, args: string[]) {
         error = "Você dizer o nome da porcentagem!";
     } else {
         const text = args.join(" ");
-        return await message.replyText("Você é " + Math.round(Math.random() * 100) + "% " + text);
+        await message.replyText("Você é " + Math.round(Math.random() * 100) + "% " + text);
+        return await message.react(Emojis.success);
     }
-    await message.react(Emojis.success);
-    return await message.replyText(error);
+    
+    await message.replyText(error);
+    await message.react(Emojis.fail);
 }
 
 export async function casal(message: IMessage, bot: IBot) {
@@ -149,8 +155,8 @@ export async function casal(message: IMessage, bot: IBot) {
     const sliced = shuffled.slice(0, 2);
 
     let _message = "❤️❤️ Meu casal ❤️❤️\n\n" + `${sliced[0].id} + ${sliced[1].id}`;
+    await message.replyText(_message);
     await message.react(Emojis.success);
-    message.replyText(_message);
 }
 
 export async function gpt(message: IMessage, args: string[]) {
@@ -163,8 +169,8 @@ export async function gpt(message: IMessage, args: string[]) {
 export async function copyMedia(message: IMessage) {
     await message.react(Emojis.waiting);
     if (!["imageMessage", "videoMessage"].includes(message.quotedMessageType)) {
-        await message.react(Emojis.fail);
-        return await message.replyText("Mensagem não é video ou imagem!");
+        await message.replyText("Mensagem não é video ou imagem!");
+        return await message.react(Emojis.fail);
     }
     const messageMedia = message.hasQuotedMessage ? JSON.parse(JSON.stringify(message.originalMessage).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : message.originalMessage;
     const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});

@@ -22,24 +22,16 @@ export function registerCommands(handler: CommandHandler) {
                 func: (bot: IBot, message: IMessage, args: string[]) => {message.replyText(handler.getHelp(bot, args.join(" ")), {})}
             },
             {
-                name: "test",
-                description: "teste",
-                aliases: [],
-                func: (bot, message: IMessage) => {info.test(bot, message)}
-            },
-            {
                 name: "bug",
                 description: "",
                 aliases: [],
                 func: (bot: IBot, message: IMessage, args: string[]) => {info.bug(message, bot, args)}
             },
             {
-                name: "reply",
-                description: "Test Chat",
-                aliases: [],
-                func: async (_: IBot, message: IMessage) => {
-                    const sentMessage = await message.replyText("Oi", {});
-                }
+                name: "donate",
+                description: "Quer ajudar o bot? Doe por aqui!",
+                aliases: ["doar"],
+                func: async (_, message) => {info.donate(message)}
             }
         ]
     }
@@ -73,7 +65,7 @@ export function registerCommands(handler: CommandHandler) {
             },
             {
                 name: "anime",
-                description: "Download anime",
+                description: "Baixa anime. Exemplo: $prefix$command symphogear ep=1",
                 aliases: [],
                 func: (_: IBot, message: IMessage, args: string[]) => {media.getAnime(message, args.join(" "))}
             },

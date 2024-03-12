@@ -26,3 +26,14 @@ export async function bug(message: IMessage, bot: IBot, args: string[]) {
 export async function test(bot: IBot, message: IMessage) {
     await bot.createPoll(message, "test", ["1", "2"]);
 }
+
+export async function donate(message: IMessage) {
+    const paymentMethods: string[] = [
+        "- Patreon: https://www.patreon.com/kamuridesu",
+    ];
+    if (process.env.OWNER_PIX) {
+        paymentMethods.push(`- PIX: ${process.env.OWNER_PIX}`);
+    }
+    const messageToSend = `Caso queira ajudar financeiramente:\n\n` + paymentMethods.join("\n")
+    await message.replyText(messageToSend);
+}
