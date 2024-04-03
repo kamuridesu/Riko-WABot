@@ -2,13 +2,6 @@ import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { Emojis } from "../utils/emoji.js";
 import { IBot } from "@kamuridesu/whatframework/@types/types.js";
 
-enum Actions {
-    demote = "demote",
-    promote = "promote",
-    add = "add",
-    remove = "remove"
-}
-
 async function validateBotIsAdmin(message: IMessage) {
     let returnValue = true;
     if (!message.group?.botIsAdmin) {
@@ -53,7 +46,7 @@ export async function mentionAll(message: IMessage, args: string[]) {
     const membersIds = message.group?.members.map(member => member.id);
     if (message.quotedMessage) {
         await message.bot.sendTextMessage(
-            message.author.chatJid, args.join(" "), {quoted: message.quotedMessage.originalMessage, mentions: membersIds}
+            message.author.chatJid, message.quotedMessage.body, {mentions: membersIds}
         );
         return await message.react(Emojis.success);
     }

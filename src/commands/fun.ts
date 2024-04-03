@@ -3,6 +3,7 @@ import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { createSticker } from "@kamuridesu/whatframework/libs/sticker.js";
 import { Emojis } from "../utils/emoji.js";
 import { GPT } from "../utils/gpt.js";
+import { Database, IS_DB_ENABLED } from "../utils/db.js";
 
 const gptInstance = new GPT();
 
@@ -176,5 +177,42 @@ export async function copyMedia(message: IMessage) {
     const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
     const type: string = message.quotedMessageType.replace("Message", "");
     await message.replyMedia(mediaBuffer as any, type);
+    await message.react(Emojis.success);
+}
+
+export async function registerFilter(message: IMessage, args: string[], db: Database) {
+    if (args === undefined || args.length < 1 || message.hasQuotedMessage == false) {
+        await message.replyText("Por gentileza, mencione uma mensagem e responda com um filtro!");
+        return await message.react(Emojis.fail);
+    }
+
+    if (!(message.quotedMessageType == "conversation")) {
+        await message.replyText("Apenas mensagens de texto são suportadas no momento!");
+        return await message.react(Emojis.fail);
+    }
+
+    if (!IS_DB_ENABLED) {
+        await message.replyText("Erro ao consultar banco de dados!");
+        return await message.react(Emojis.fail);
+    }
+
+    await db.addChatIfNotExists(message.author.chatJid);
+    const filter = args.join(" ");
+    console.log(message.author.chatJid, message.quotedMessageType, message.quotedMessage?.body, filter);
+    await db.addFilterIfNotExists(message.author.chatJid, message.quotedMessageType, message.quotedMessage!.body, filter);
+
+    await message.replyText("Filter criado com sucesso!");
+    await message.react(Emojis.success);
+}
+
+export async function removeFilter(message: IMessage, args: string[], db: Database ) {
+    if (!IS_DB_ENABLED) {
+        await message.replyText("Erro ao consultar banco de dados!");
+        return await message.react(Emojis.fail);
+    }
+
+    await db.deleteFilter(args.join(" "), message.author.chatJid,);
+
+    await message.replyText("Filtro deletado");
     await message.react(Emojis.success);
 }

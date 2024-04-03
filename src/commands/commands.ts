@@ -4,6 +4,9 @@ import * as info from "./info.js";
 import * as media from "./media.js"
 import * as diversao from "./fun.js";
 import * as admin from "./admin.js";
+import { Database } from '../utils/db.js';
+
+const DATABASE = new Database();
 
 export function registerCommands(handler: CommandHandler) {
     const infoCommands: ICommands = {
@@ -147,6 +150,18 @@ export function registerCommands(handler: CommandHandler) {
                 description: "Copia uma midia",
                 aliases: [],
                 func: (_, message: IMessage) => {diversao.copyMedia(message)}
+            },
+            {
+                name: "filter",
+                description: "Cria um filter para responder a um padrão, ex: /filter meu cu",
+                aliases: [],
+                func: (_, message, args) => {diversao.registerFilter(message, args, DATABASE)}
+            },
+            {
+                name: "rfilter",
+                description: "Remove um filter, ex: /rfilter test",
+                aliases: [],
+                func: (_, message, args) => {diversao.removeFilter(message, args, DATABASE)}
             }
         ]
     }

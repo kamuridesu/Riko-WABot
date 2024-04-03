@@ -15,12 +15,14 @@
     "@kamuridesu/kamtube": "^0.1.21",
     "@kamuridesu/kamuanimejs": "^1.0.7",
     "@kamuridesu/simplelyrics": "^1.0.2",
-    "@kamuridesu/whatframework": "^0.1.41-b",
+    "@kamuridesu/whatframework": "^0.1.44-b",
     "axios": "^1.6.5",
     "jimp": "^0.16.13",
     "link-preview-js": "^3.0.4",
     "nekosapi": "0.5.2",
-    "socks-proxy-agent": "^8.0.2"
+    "socks-proxy-agent": "^8.0.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/node": "^20.10.8",
