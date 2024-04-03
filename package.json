@@ -13,9 +13,9 @@
   "type": "module",
   "dependencies": {
     "@kamuridesu/kamtube": "^0.1.21",
-    "@kamuridesu/kamuanimejs": "^1.0.6",
+    "@kamuridesu/kamuanimejs": "^1.0.7",
     "@kamuridesu/simplelyrics": "^1.0.2",
-    "@kamuridesu/whatframework": "^0.1.37-b",
+    "@kamuridesu/whatframework": "^0.1.41-b",
     "axios": "^1.6.5",
     "jimp": "^0.16.13",
     "link-preview-js": "^3.0.4",

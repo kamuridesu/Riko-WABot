@@ -6,8 +6,6 @@ import { registerCommands } from "./src/commands/commands.js";
 class Entrypoint implements EntryPoint{
     prefix = "/";
     ownerNumber = process.env.OWNER as string;
-    botNumber = process.env.BOT as string;
-    commandsFilename = "commands.js";
     botName = "Riko-chan";
     language = "pt-br";
     handler = new CommandHandler();

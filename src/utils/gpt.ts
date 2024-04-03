@@ -10,7 +10,7 @@ interface MessageData {
 }
 
 const GPTURL = process.env.GPT_HOST;
-export const IS_GPT_ENABLED = GPTURL != undefined ? true : false
+export const IS_GPT_ENABLED = GPTURL != undefined;
 
 export class GPT {
     fila: MessageData[] = [];
@@ -58,7 +58,7 @@ export class GPT {
     async generateTextReply(message: MessageData) {
         message.running = true;
         const { prompt, model } = parseMessageToModelAndMessage(message.message.body)
-        const messageText = prompt.split(' ').slice(1).join(" ").replace(/\n/gi, ". ");
+        const messageText = prompt.split(' ').slice(1).join(" ").replace(/\n/gi, ". ").replace("\"", "'");
         try {
             const response = await axios.post(
                 `http://${GPTURL}/api/generate`,

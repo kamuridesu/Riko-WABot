@@ -67,8 +67,8 @@ export async function nivelGado(message: IMessage) {
 
 export async function slot(message: IMessage) {
     // data.sender_data.slot_chances = data.sender_data.slot_chances - 1;
-    const fruits_array = ['🥑', '🍉', '🍓', '🍎', '🍍', '🥝', '🍑', '🥥', '🍋', '🍐', '🍌', '🍒', '🔔', '🍊', '🍇']
-    // const fruits_array = ['🥑', '🍉']
+    const fruits_array = ['🥑', '🍉', '🍓', '🍎', '🍍', '🥝', '🍑', '🥥', '🍋', '🍐', '🍌', '🍒', '🔔', '🍊', '🍇'];
+    // const fruits_array = ['🥑', '🍉', '🍓'];
     let winner: string[] = []
     for (let i = 0; i < 3; i++) {
         winner.push(fruits_array[Math.floor(Math.random() * fruits_array.length)]);
