@@ -144,7 +144,8 @@ export async function casal(message: IMessage, bot: IBot) {
     if (!message.chatIsGroup) {
         return message.replyText("Erro! Comando pode ser usado apenas em um grupo!");
     }
-    const membersExceptBot = message.group?.members.filter((value) => value.id.split("@")[0] != bot.botNumber);
+    const members = (await bot.connection?.groupMetadata(message.author.chatJid))?.participants;
+    const membersExceptBot = members?.filter((value) => value.id.split("@")[0] != bot.botNumber);
     if (membersExceptBot == undefined) return message.replyText("Erro! Comando pode ser usado apenas em um grupo!");;
 
     let shuffled = [...membersExceptBot];
