@@ -17,4 +17,7 @@ WORKDIR /app
 RUN apt update && apt install ffmpeg libwebp-dev -y
 COPY --from=deps /app/ .
 COPY --from=build /app/modules /app/modules
-CMD [ "npx", "whatframework" ]
+COPY ./init.sh /app/init.sh
+COPY migrations /app/migrations
+COPY ./migrate.js /app/migrate.js
+CMD [ "sh", "init.sh" ]

@@ -2,7 +2,7 @@ import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { Emojis } from "../utils/emoji.js";
 import { IBot } from "@kamuridesu/whatframework/@types/types.js";
 
-async function validateBotIsAdmin(message: IMessage) {
+export async function validateBotIsAdmin(message: IMessage) {
     let returnValue = true;
     if (!message.group?.botIsAdmin) {
         await message.react(Emojis.fail);
@@ -12,19 +12,23 @@ async function validateBotIsAdmin(message: IMessage) {
     return returnValue;
 }
 
-async function validateIsGroupAndAdmin(message: IMessage) {
-    let returnValue = true;
+export async function validateIsGroupAndAdmin(message: IMessage) {
     if (!message.chatIsGroup) {
         await message.react(Emojis.fail);
         await message.replyText("Erro! Este comando pode ser usado apenas em grupos!");
-        returnValue = false;
+        return false;
     }
-    if (!message.author.isAdmin) {
+
+    const groupMembers = (await message.bot.connection!.groupMetadata(message.author.chatJid))
+                            .participants
+                            .filter(x => x.admin != null)
+                            .map(x => x.id);
+    if (!groupMembers.includes(message.author.jid)) {
         await message.react(Emojis.fail);
         await message.replyText("Erro! Apenas ADMINs podem usar este comando!");
-        returnValue = false;
+        return false;
     }
-    return returnValue;
+    return true;
 }
 
 async function isOwner(message: IMessage) {

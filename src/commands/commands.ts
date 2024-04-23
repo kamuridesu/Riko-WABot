@@ -4,6 +4,7 @@ import * as info from "./info.js";
 import * as media from "./media.js"
 import * as diversao from "./fun.js";
 import * as admin from "./admin.js";
+import * as games from "./game.js";
 import { Database } from '../utils/db.js';
 
 const DATABASE = new Database();
@@ -196,5 +197,29 @@ export function registerCommands(handler: CommandHandler) {
         ]
     }
 
-    handler.register(infoCommands, funCommands, mediaCommands, adminCommands);
+    const gameCommands: ICommands = {
+        category: "GAMES",
+        commands: [
+            {
+                name: "apoints",
+                description: "Adiciona pontos a uma pessoa, ex: $prefix$command @xxxxx 1",
+                aliases: ["ap"],
+                func: (_: IBot, message: IMessage, args: string[]) => {games.changePoints(message, args, DATABASE)}
+            },
+            {
+                name: "rpoints",
+                description: "Remove pontos de uma pessoa, ex: $prefix$command @xxxxx 1",
+                aliases: ["rp"],
+                func: (_: IBot, message: IMessage, args: string[]) => {games.changePoints(message, args, DATABASE, true)}
+            },
+            {
+                name: "lpoints",
+                description: "Lista todos os pontos, ex: $prefix$command",
+                aliases: ["lp"],
+                func: (_: IBot, message: IMessage) => {games.getAllMembersPoints(message, DATABASE)}
+            }
+        ]
+    }
+
+    handler.register(infoCommands, funCommands, mediaCommands, adminCommands, gameCommands);
 }
