@@ -34,8 +34,8 @@ export async function changePoints(message: IMessage, args: string[], db: Databa
 
 }
 
-export async function getAllMembersPoints(message: IMessage, db: Database) {
-    const result = await db.getAllMembersPoints(message.author.chatJid);
+export async function getAllMembers(message: IMessage, db: Database) {
+    const result = await db.getAllMembers(message.author.chatJid);
     let resultString = "Pontuação atual: \n\n";
     for (let member of result) {
         resultString += "- " + member.jid + ": " + member.points + "\n";
@@ -44,4 +44,41 @@ export async function getAllMembersPoints(message: IMessage, db: Database) {
     await message.replyText(resultString);
     return await message.react(Emojis.success);
 
+}
+
+export async function rollDice(message: IMessage, args: string[]) {
+    if (args.length < 1) {
+        await message.replyText("Erro! Tipo de dado não informado!");
+        return await message.react(Emojis.fail)
+    }
+
+    let faces = parseInt(args[0]);
+    let rolls = 1;
+
+    if (!args.join("").trim().match(/^\d+$/)) {
+        await message.replyText("Erro! Apenas números são suportados!");
+        return await message.react(Emojis.fail)
+    }
+
+    if (args.length == 2) {
+        rolls = parseInt(args[1]);
+    }
+
+    let results = "Resultados: \n";
+
+    for (let i = 0; i < rolls; i++) {
+        results += "- " + (Math.floor(Math.random() * faces) + 1) + "\n";
+    }
+
+    await message.replyText(results);
+    return await message.react(Emojis.success)
+}
+
+export async function resetPointsCounter(message: IMessage, db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    const usersWithMessage = (await db.getAllMembers(message.author.chatJid));
+    for (let member of usersWithMessage) {
+        await db.addMemberToPoints(member.chatId, member.jid, member.points, true);
+    }
+    return await message.react(Emojis.success)
 }

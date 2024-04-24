@@ -15,7 +15,7 @@ class Entrypoint implements EntryPoint{
     }
 
     async chatHandlers(bot: IBot, message: string, context: IMessage) {
-        chatsHandler(bot, message, context);
+        await chatsHandler(bot, message, context);
     }
 
     async commandHandlers(bot: IBot, command: string, args: string[], context: IMessage) {

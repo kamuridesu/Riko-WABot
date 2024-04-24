@@ -1,6 +1,7 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { Emojis } from "../utils/emoji.js";
 import { IBot } from "@kamuridesu/whatframework/@types/types.js";
+import { Database } from "../utils/db.js";
 
 export async function validateBotIsAdmin(message: IMessage) {
     let returnValue = true;
@@ -113,6 +114,39 @@ export async function broadcastToGroups(bot: IBot, message: IMessage, args: stri
         return await message.replyText("Transmissão enviada com sucesso!");
     }
     return await message.replyText("Erro!")
+}
+
+export async function getUsersWithNoMessage(message: IMessage, db: Database) {
+    const allMembers = (await message.bot.connection!
+                        .groupMetadata(message.author.chatJid))
+                        .participants.map(x => x.id);
+    const usersWithMessage = (await db.getAllMembers(message.author.chatJid)).filter(x => x.msgCount != 0).map(x => x.jid);
+    const usersWithNoMessage = allMembers.filter(x => !usersWithMessage.includes(x));
+    let response = "Membros sem mensagem: \n";
+    for (let member of usersWithNoMessage) {
+        response += "- " + member + "\n";
+    }
+    await message.replyText(response);
+    return await message.react(Emojis.success);
+}
+
+export async function getAllUsersMessages(message: IMessage, db: Database)  {
+    const usersWithMessage = (await db.getAllMembers(message.author.chatJid)).filter(x => x.msgCount != 0 && x.msgCount != null);
+    let response = "Mensagens por membro: \n";
+    for (let member of usersWithMessage) {
+        response += "- " + member.jid + ": " + member.msgCount + " mensagens\n";
+    }
+    await message.replyText(response);
+    return await message.react(Emojis.success);
+}
+
+export async function resetMessageCounter(message: IMessage, db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    const usersWithMessage = (await db.getAllMembers(message.author.chatJid));
+    for (let member of usersWithMessage) {
+        await db.addToMessageCount(member.chatId, member.jid, true);
+    }
+    return await message.react(Emojis.success);
 }
 
 export const demote = (message: IMessage) => changeRole(message, 'demote');

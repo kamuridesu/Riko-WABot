@@ -199,7 +199,7 @@ export async function registerFilter(message: IMessage, args: string[], db: Data
 
     await db.addChatIfNotExists(message.author.chatJid);
     const filter = args.join(" ");
-    console.log(message.author.chatJid, message.quotedMessageType, message.quotedMessage?.body, filter);
+    // console.log(message.author.chatJid, message.quotedMessageType, message.quotedMessage?.body, filter);
     await db.addFilterIfNotExists(message.author.chatJid, message.quotedMessageType, message.quotedMessage!.body, filter);
 
     await message.replyText("Filter criado com sucesso!");

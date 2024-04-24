@@ -28,6 +28,7 @@ export interface Member {
     jid: string;
     chatId: string;
     points: number;
+    msgCount: number | null; 
 }
 
 export class Database {
@@ -91,7 +92,7 @@ export class Database {
         }
     }
 
-    async getPointsMember(chatJid: string, userJid: string) {
+    async getMember(chatJid: string, userJid: string) {
         const query = `SELECT * FROM member WHERE jid = ? AND chatId = ?`;
         await this.connect();
         const result: Member | undefined = await this.db?.get(query, [userJid, chatJid]);
@@ -104,17 +105,17 @@ export class Database {
         await this.db?.run(query, [points, chatJid, userJid]);
     }
 
-    async createMemberPoints(chatJid: string, userJid: string) {
-        const query = `INSERT INTO member (jid, chatId, points) VALUES (?, ?, ?)`;
+    async createMember(chatJid: string, userJid: string) {
+        const query = `INSERT INTO member (jid, chatId, points, msgCount) VALUES (?, ?, ?, ?)`;
         await this.connect();
-        await this.db?.run(query, [userJid, chatJid, 0]);
+        await this.db?.run(query, [userJid, chatJid, 0, 0]);
     }
 
     async addMemberToPoints(chatJid: string, userJid: string, points: number, subtract = false) {
-        const member = await this.getPointsMember(chatJid, userJid);
+        const member = await this.getMember(chatJid, userJid);
         let newPoints = 0;
         if (!member) {
-            await this.createMemberPoints(chatJid, userJid);
+            await this.createMember(chatJid, userJid);
         } else {
             newPoints = member.points;
         }
@@ -126,10 +127,30 @@ export class Database {
         await this.updateMemberPoints(chatJid, userJid, newPoints);
     }
 
-    async getAllMembersPoints(chatJid: string) {
+    async getAllMembers(chatJid: string) {
         const query = `SELECT * FROM member WHERE chatId = ?`;
         await this.connect();
         const result: Member[] | undefined = await this.db?.all(query, [chatJid]);
         return result ? result : [];
+    }
+
+    async addToMessageCount(chatJid: string, userJid: string, reset = false) {
+        const member = await this.getMember(chatJid, userJid);
+        let totalMessages = 1;
+        if (!member) {
+            await this.createMember(chatJid, userJid);
+        } else {
+            totalMessages += member.msgCount ? member.msgCount : 0;
+        }
+        if (reset) {
+            totalMessages = 0;
+        }
+        await this.updateMessageCounter(totalMessages, userJid, chatJid);
+    }
+
+    private async updateMessageCounter(totalMessages: number, userJid: string, chatJid: string) {
+        const query = `UPDATE member SET msgCount=? WHERE jid = ? AND chatId = ?`;
+        await this.connect();
+        await this.db?.run(query, [totalMessages, userJid, chatJid]);
     }
 }

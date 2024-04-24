@@ -193,6 +193,24 @@ export function registerCommands(handler: CommandHandler) {
                 description: "Transmitir uma mensagem para todos os grupos em que o bot está",
                 aliases: ["bc", "broadcast"],
                 func: (bot, message, args) => {admin.broadcastToGroups(bot, message, args)}
+            },
+            {
+                name: "listamsg",
+                description: "Lista o numero de mensagem por usuarios",
+                aliases: ["lm", "lmsg"],
+                func: (_, message) => {admin.getAllUsersMessages(message, DATABASE)}
+            },
+            {
+                name: "listanomsg",
+                description: "Lista o numero de mensagem por usuarios",
+                aliases: ["lnm", "lnmsg"],
+                func: (_, message) => {admin.getUsersWithNoMessage(message, DATABASE)}
+            },
+            {
+                name: "resetmsg",
+                description: "Lista o numero de mensagem por usuarios",
+                aliases: ["rmsg"],
+                func: (_, message) => {admin.resetMessageCounter(message, DATABASE)}
             }
         ]
     }
@@ -216,7 +234,19 @@ export function registerCommands(handler: CommandHandler) {
                 name: "lpoints",
                 description: "Lista todos os pontos, ex: $prefix$command",
                 aliases: ["lp"],
-                func: (_: IBot, message: IMessage) => {games.getAllMembersPoints(message, DATABASE)}
+                func: (_: IBot, message: IMessage) => {games.getAllMembers(message, DATABASE)}
+            },
+            {
+                name: "repoints",
+                description: "Lista todos os pontos, ex: $prefix$command",
+                aliases: ["rep"],
+                func: (_: IBot, message: IMessage) => {games.resetPointsCounter(message, DATABASE)}
+            },
+            {
+                name: "roll",
+                description: "Rola um ou mais dados, ex: $prefix$command 20 1, rola 1d20",
+                aliases: ["roll"],
+                func: (_: IBot, message: IMessage, args) => {games.rollDice(message, args)}
             }
         ]
     }

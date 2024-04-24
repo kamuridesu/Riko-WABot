@@ -34,5 +34,9 @@ const db = await open({
 });
 
 for (let query of data) {
-    await db.run(query);
+    try {
+        await db.run(query);
+    } catch (e) {
+        console.log("Error running migration: " + e);
+    }
 }
