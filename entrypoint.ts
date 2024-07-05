@@ -4,6 +4,7 @@ import { chatsHandler } from "./src/chat/handlers.js";
 import { registerCommands } from "./src/commands/commands.js";
 import { Database, FilterDB, PointsDB } from "./src/utils/db.js";
 import { existsSync, mkdirSync } from "fs";
+import { getWelcomeMessage } from "./src/commands/admin.js";
 
 const DATABASE = new Database();
 const FILTERDB = new FilterDB();
@@ -34,6 +35,14 @@ class Entrypoint implements EntryPoint{
             return;
         }
         this.handler.handle(command, bot, context, args);
+    }
+
+    async addMemberHandlers(ctx: IBot, data: { id: string; author: string; participants: string[]; }) {
+        await getWelcomeMessage(ctx, data.id, DATABASE, data.participants);
+    }
+
+    async removeMemberHandlers(ctx: IBot, data: { id: string; author: string; participants: string[]; }) {
+
     }
 }
 

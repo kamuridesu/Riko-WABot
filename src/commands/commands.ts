@@ -233,6 +233,12 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 description: "Desmuta um membro",
                 aliases: ["um"],
                 func: (_, message) => {admin.silenceUserInGroup(message, DATABASE, false)}
+            },
+            {
+                name: "welcome",
+                description: "Adiciona mensagem de boas vindas",
+                aliases: ["wc"],
+                func: (_, message, args) => {admin.setWelcomeMessage(message, args, DATABASE)}
             }
         ]
     }

@@ -54,10 +54,11 @@ export async function mentionAll(message: IMessage, args: string[]) {
         await message.react(Emojis.fail);
         return await message.replyText("Erro! Preciso de alguma mensagem!");
     }
-    const membersIds = message.group?.members.map(member => member.id);
-    if (message.quotedMessage) {
+    const membersIds = (await message.group?.members)!.map(member => member.id);
+
+    if (message.quotedMessageType == "conversation") {
         await message.bot.sendTextMessage(
-            message.author.chatJid, message.quotedMessage.body, {mentions: membersIds}
+            message.author.chatJid, message.quotedMessage!.body, {mentions: membersIds}
         );
         return await message.react(Emojis.success);
     }
@@ -96,7 +97,7 @@ async function changeRole(message: IMessage, action: 'promote' | 'demote') {
 }
 
 async function updateRole(user: string, message: IMessage, action: 'promote' | 'demote') {
-    const isAdmin = message.group?.admins.map(e => e.id).includes(user);
+    const isAdmin = (await message.group?.admins)!.map(e => e.id).includes(user);
     if ((isAdmin && action === 'promote') || (!isAdmin && action === 'demote')) {
         return `\nUsuário ${user} ${action === 'promote' ? 'é' : 'não é'} admin!`;
     } else {
@@ -205,6 +206,27 @@ export async function silenceUserInGroup(message: IMessage, db: Database, silenc
         return await message.replyText(errorMessage);
     }
     await message.react(Emojis.success);
+}
+
+export async function setWelcomeMessage(message: IMessage, args: string[], db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (args.length < 1) return (await message.react(Emojis.fail) && await message.replyText("Preciso de uma mensagem!"));
+
+    const msg = args.join(" ");
+
+    await db.setWelcomeMessage(await message.group!.groupId, msg);
+    
+    return await message.react(Emojis.success);
+}
+
+export async function getWelcomeMessage(bot: IBot, id: string, db: Database, participants: string[]) {
+    let msg = await db.getWelcomeMessage(id);
+    if (msg.includes("@users")) {
+        msg = msg.replace("@users", participants.join(" "));
+    }
+    if (msg != '') {
+        return await bot.sendTextMessage(id, msg, {})
+    }
 }
 
 export const demote = (message: IMessage) => changeRole(message, 'demote');

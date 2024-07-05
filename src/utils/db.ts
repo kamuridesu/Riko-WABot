@@ -130,6 +130,22 @@ export class Database {
         const silenced = silence ? 1 : 0;
         await this.db?.run(query, [silenced, userJid, chatJid]);
     }
+
+    async getWelcomeMessage(chatJid: string): Promise<string> {
+        const query = `SELECT welcomeMsg from chat WHERE jid = ?`;
+        await this.connect();
+        const res = await this.db?.get(query, [chatJid]);
+        if (res) {
+            return res.welcomeMsg as string;
+        }
+        return '';
+    }
+
+    async setWelcomeMessage(chatJid: string, message: string) {
+        const query = `UPDATE chat set welcomeMsg=? WHERE jid = ?`;
+        await this.connect();
+        await this.db?.run(query, [message, chatJid]);
+    }
 }
 
 
