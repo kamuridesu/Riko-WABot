@@ -1,7 +1,7 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
-import { Emojis } from "../utils/emoji.js";
 import { IBot } from "@kamuridesu/whatframework/@types/types.js";
 import { Database } from "../utils/db.js";
+import { Emojis } from "../utils/emoji.js";
 
 export async function validateBotIsAdmin(message: IMessage) {
     let returnValue = true;
@@ -124,11 +124,7 @@ export async function broadcastToGroups(bot: IBot, message: IMessage, args: stri
 }
 
 export async function getUsersWithNoMessage(message: IMessage, db: Database) {
-    const allMembers = (await message.bot.connection!
-                        .groupMetadata(message.author.chatJid))
-                        .participants.map(x => x.id);
-    const usersWithMessage = (await db.getAllMembers(message.author.chatJid)).filter(x => x.msgCount != 0).map(x => x.jid);
-    const usersWithNoMessage = allMembers.filter(x => !usersWithMessage.includes(x));
+    const usersWithNoMessage = await listUsersWithNoMessages(message, db, 0);
     let response = "Membros sem mensagem: \n";
     for (let member of usersWithNoMessage) {
         response += "- " + member + "\n";
@@ -137,8 +133,45 @@ export async function getUsersWithNoMessage(message: IMessage, db: Database) {
     return await message.react(Emojis.success);
 }
 
+async function listUsersWithNoMessages(message: IMessage, db: Database, messageCount: number) {
+    const allMembers = (await message.bot.connection!
+        .groupMetadata(message.author.chatJid))
+        .participants.map(x => x.id);
+    const usersWithMessage = (await db.getAllMembers(message.author.chatJid)).filter(x => x.msgCount != null && x.msgCount > messageCount).map(x => x.jid);
+    console.log(usersWithMessage);
+    const usersWithNoMessage = allMembers.filter(x => !usersWithMessage.includes(x) && x != message.bot.botNumber);
+    return usersWithNoMessage;
+}
+
+export async function banUsersBellowThreshold(message: IMessage, args: string[], db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (!(await validateBotIsAdmin(message))) return;
+    if (!(args.length > 0)) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Faltando numero de mensagens!");
+    }
+    if (!args.join("").trim().match(/^\d+$/)) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Argumento não é um numero!");
+    }
+    const messageCount = parseInt(args.join(""));
+    const usersWithNoMessage = await listUsersWithNoMessages(message, db, messageCount);
+    console.log(usersWithNoMessage);
+    // await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, usersWithNoMessage, "remove");
+    await message.react(Emojis.success);
+    return await message.replyText("Membros removidos!");
+}
+
 export async function getAllUsersMessages(message: IMessage, db: Database)  {
-    const usersWithMessage = (await db.getAllMembers(message.author.chatJid)).filter(x => x.msgCount != 0 && x.msgCount != null);
+    if (!message.chatIsGroup) {
+        await message.react(Emojis.fail);
+        await message.replyText("Erro! Este comando pode ser usado apenas em grupos!");
+        return false;
+    }
+    const allMembers = (await message.group!.members).map(x => x.id);
+    const usersWithMessage = (await db.getAllMembers(message.author.chatJid))
+                            .filter(x => x.msgCount != null && x.msgCount > 0)
+                            .filter(x => allMembers?.includes(x.jid))
     let response = "Mensagens por membro: \n";
     for (let member of usersWithMessage) {
         response += "- " + member.jid + ": " + member.msgCount + " mensagens\n";
@@ -215,7 +248,7 @@ export async function setWelcomeMessage(message: IMessage, args: string[], db: D
     const msg = args.join(" ");
 
     await db.setWelcomeMessage(await message.group!.groupId, msg);
-    
+
     return await message.react(Emojis.success);
 }
 

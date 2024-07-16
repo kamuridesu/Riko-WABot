@@ -1,11 +1,11 @@
+import { IBot, ICommands, IMessage } from '@kamuridesu/whatframework/@types/types.js';
 import { CommandHandler } from '@kamuridesu/whatframework/libs/handlers.js';
-import { IBot, IMessage, ICommands } from '@kamuridesu/whatframework/@types/types.js';
-import * as info from "./info.js";
-import * as media from "./media.js"
-import * as diversao from "./fun.js";
+import { Database, FilterDB, PointsDB } from '../utils/db.js';
 import * as admin from "./admin.js";
+import * as diversao from "./fun.js";
 import * as games from "./game.js";
-import { Database, PointsDB, FilterDB } from '../utils/db.js';
+import * as info from "./info.js";
+import * as media from "./media.js";
 
 export function registerCommands(handler: CommandHandler, DATABASE: Database, FILTERDB: FilterDB, POINTSDB: PointsDB) {
     const infoCommands: ICommands = {
@@ -89,10 +89,10 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 aliases: ["tagnsfw"],
                 func: (_, message) => {media.getImagesTags(message, true)}
             },
-            
+
         ]
     }
-    
+
     const funCommands: ICommands = {
         category: "DIVERSAO",
         commands: [
@@ -209,6 +209,12 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 description: "Lista o numero de mensagem por membros",
                 aliases: ["lnm", "lnmsg"],
                 func: (_, message) => {admin.getUsersWithNoMessage(message, DATABASE)}
+            },
+            {
+                name: "removemsg",
+                description: "Remove membros com menos mensagens que o passado",
+                aliases: ["rlmsg"],
+                func: (_, message, args) => {admin.banUsersBellowThreshold(message, args, DATABASE)}
             },
             {
                 name: "resetmsg",

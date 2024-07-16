@@ -1,5 +1,5 @@
-import path from "path";
 import fs from "fs";
+import path from "path";
 import { open } from "sqlite";
 import pkg from 'sqlite3';
 const { Database: DBDriver } = pkg
