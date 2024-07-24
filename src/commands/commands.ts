@@ -245,6 +245,18 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 description: "Adiciona mensagem de boas vindas",
                 aliases: ["wc"],
                 func: (_, message, args) => {admin.setWelcomeMessage(message, args, DATABASE)}
+            },
+            {
+                name: "startbot",
+                description: "Permite que o bot responda a mensagens",
+                aliases: ["sb"],
+                func: (_, message) => {admin.botConversation(message, DATABASE)}
+            },
+            {
+                name: "stopbot",
+                description: "Evita que o bot responda a mensagens",
+                aliases: ["stb"],
+                func: (_, message) => {admin.botConversation(message, DATABASE, true)}
             }
         ]
     }

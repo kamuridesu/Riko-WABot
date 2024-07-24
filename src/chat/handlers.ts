@@ -25,13 +25,19 @@ async function chatsHandler(bot: IBot, message: string, context: IMessage, DATAB
     }
     const filters = (await FILTERDB.getFilters(context.author.chatJid));
     if (filters.length > 0) {
-        funcs.replyFilter(bot, context, filters);
+        return funcs.replyFilter(bot, context, filters);
     }
 
-    if (message.toLocaleLowerCase().includes("bot") && 
-        ["inutil", "inútil", "lixo", "arrombado", "fdp", "ruim", "tome no rabo"]
+    if (message.toLocaleLowerCase().split(" ").includes("bot")) {
+        if (["inutil", "inútil", "lixo", "arrombado", "fdp", "ruim", "tome no rabo"]
         .filter(x => message.toLowerCase().includes(x)).length > 0) {
-        return await context.replyText(OFFENSIVE_RESPONSES[Math.floor(Math.random() * OFFENSIVE_RESPONSES.length)]);
+            return await context.replyText(OFFENSIVE_RESPONSES[Math.floor(Math.random() * OFFENSIVE_RESPONSES.length)]);
+        }
+        return await funcs.replyConciseMessage(context, DATABASE);
+    }
+
+    if (context.quotedMessage?.author.jid === bot.botNumber) {
+        return await funcs.replyConciseMessage(context, DATABASE);
     }
 }
 

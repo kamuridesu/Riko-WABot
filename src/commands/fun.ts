@@ -216,9 +216,9 @@ export async function gpt(message: IMessage, args: string[]) {
     return message.replyText("A mensagem não pode ser vazia!");
   if (!gptInstance.isGPTEnabled)
     return message.replyText("GPT não está configurado!");
-  return await message.replyText(
-    "GPT desativado por tempo indefinido, quando voltar mando um anuncio.",
-  );
+  // return await message.replyText(
+  //   "GPT desativado por tempo indefinido, quando voltar mando um anuncio.",
+  // );
   await message.react(Emojis.waiting);
   return gptInstance.generate(message);
 }

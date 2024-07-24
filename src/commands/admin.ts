@@ -262,5 +262,16 @@ export async function getWelcomeMessage(bot: IBot, id: string, db: Database, par
     }
 }
 
+export async function botConversation(message: IMessage, db: Database, disable = false) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (disable) {
+        await db.disableBotConversation(message.author.chatJid);
+    } else {
+        await db.allowBotConversation(message.author.chatJid);
+    }
+    await message.react(Emojis.success);
+}
+
+
 export const demote = (message: IMessage) => changeRole(message, 'demote');
 export const promote = (message: IMessage) => changeRole(message, 'promote');

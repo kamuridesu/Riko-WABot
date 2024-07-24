@@ -152,6 +152,28 @@ export class Database {
     await this.connect();
     await this.db?.run(query, [message, chatJid]);
   }
+
+  async allowBotConversation(chatJid: string) {
+    const query = `UPDATE chat SET botChat=? WHERE jid = ?`;
+    await this.connect();
+    await this.db?.run(query, [1, chatJid]);
+  }
+
+  async disableBotConversation(chatJid: string) {
+    const query = `UPDATE chat SET botChat=? WHERE jid = ?`;
+    await this.connect();
+    await this.db?.run(query, [0, chatJid]);
+  }
+
+  async getBotConversation(chatJid: string) {
+    const query = `SELECT botChat from chat WHERE jid = ?`;
+    await this.connect();
+    const result = await this.db?.get(query, [chatJid]);
+    if (result) {
+        return result.botChat == 1;
+    }
+    return false;
+  }
 }
 
 export class PointsDB extends Database {

@@ -24,7 +24,7 @@ export function parseMessageToNameAndEpisode(message: string) {
 export function parseMessageToModelAndMessage(message: string) {
     let { arg, message: msg } = parseArgument(message, "model=")
     if (!arg) {
-        arg = "chatbot"
+        arg = "llama3.1:latest"
     }
     return {
         prompt: msg,
