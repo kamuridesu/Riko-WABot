@@ -34,7 +34,9 @@ for (let query of importedModules) {
     try {
         await db.run((await query).sql);
     } catch (e) {
-        console.log("Error running migration: " + e);
+        if (!e.toString().includes("duplicate column name")) {
+            console.log("Error running migration: " + e);
+        }
     }
 }
 

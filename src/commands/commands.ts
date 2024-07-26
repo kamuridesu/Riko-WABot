@@ -257,6 +257,24 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 description: "Evita que o bot responda a mensagens",
                 aliases: ["stb"],
                 func: (_, message) => {admin.botConversation(message, DATABASE, true)}
+            },
+            {
+                name: "setmodel",
+                description: "Configura um modelo de IA para o bot",
+                aliases: ["smo"],
+                func: (_, message, args) => {admin.setBotModel(message, args, DATABASE)}
+            },
+            {
+                name: "setprompt",
+                description: "Configura um prompt para a IA do bot",
+                aliases: ["spp"],
+                func: (_, message, args) => {admin.setBotPrompt(message, args, DATABASE)}
+            },
+            {
+                name: "getinfo",
+                description: "informações sobre AI",
+                aliases: ["gai"],
+                func: (_, message) => {admin.getAiInfo(message, DATABASE)}
             }
         ]
     }

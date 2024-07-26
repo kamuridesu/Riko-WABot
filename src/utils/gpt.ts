@@ -15,6 +15,24 @@ export interface Conversation {
     images?: string[];
 }
 
+interface Details {
+    parent_model: string;
+    format: string;
+    family: string;
+    families: string[]
+}
+
+export interface Model {
+    name: string;
+    model: string;
+    modified_at: string;
+    size: number;
+    digest: string;
+    details: Details;
+    parameter_size: string;
+    quantization_level: string;
+}
+
 type EditCallback = (message: string) => Promise<any>;
 type FinishCallback = (message: string) => Promise<any>;
 
@@ -36,6 +54,19 @@ export class GPT {
         }
         this.fila.push(messageData);
         await this.process();
+    }
+
+    async getModels(): Promise<Model[]> {
+        const response = await axios.get(
+            `http://${GPTURL}/api/tags`,
+            {
+                responseType: 'json'
+            }
+        )
+        if (response.status == 200) {
+            return response.data.models;
+        }
+        return []
     }
 
     async process() {

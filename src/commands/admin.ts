@@ -2,6 +2,7 @@ import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { IBot } from "@kamuridesu/whatframework/@types/types.js";
 import { Database } from "../utils/db.js";
 import { Emojis } from "../utils/emoji.js";
+import { GPT } from "../utils/gpt.js";
 
 export async function validateBotIsAdmin(message: IMessage) {
     let returnValue = true;
@@ -272,6 +273,41 @@ export async function botConversation(message: IMessage, db: Database, disable =
     await message.react(Emojis.success);
 }
 
+export async function setBotPrompt(message: IMessage, args: string[], db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (args.length < 1) {
+        await message.replyText("Preciso de algo para usar como prompt!");
+        return message.react(Emojis.fail);
+    }
+
+    const prompt = args.join(" ");
+    await db.setPrompt(message.author.chatJid, prompt);
+    return await message.react(Emojis.success);
+}
+
+export async function setBotModel(message: IMessage, args: string[], db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (args.length < 1) {
+        await message.replyText("Preciso de algo para usar como model!");
+        return message.react(Emojis.fail);
+    }
+
+    const model = args.join(" ");
+    const models = (await (new GPT().getModels())).map(x => x.name);
+    if (!(models).includes(model)) {
+        await message.replyText("Modelo não disponível! Modelos disponiveis: \n" + models.join("\n"));
+        return message.react(Emojis.fail);
+    }
+    await db.setModel(message.author.chatJid, model);
+    return await message.react(Emojis.success);
+}
+
+export async function getAiInfo(message: IMessage, db: Database) {
+    const result = await db.getAiInfo(message.author.chatJid);
+
+    await message.replyText(`Model: ${result.model}\nPrompt: ${result.systemPrompt}`);
+    await message.react(Emojis.success);
+}
 
 export const demote = (message: IMessage) => changeRole(message, 'demote');
 export const promote = (message: IMessage) => changeRole(message, 'promote');

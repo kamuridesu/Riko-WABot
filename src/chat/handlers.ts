@@ -23,11 +23,6 @@ async function chatsHandler(bot: IBot, message: string, context: IMessage, DATAB
         await bot.connection?.sendMessage(context.author.chatJid, {delete: context.originalMessage.key});
         return;
     }
-    const filters = (await FILTERDB.getFilters(context.author.chatJid));
-    if (filters.length > 0) {
-        return funcs.replyFilter(bot, context, filters);
-    }
-
     if (message.toLocaleLowerCase().split(" ").includes("bot")) {
         if (["inutil", "inútil", "lixo", "arrombado", "fdp", "ruim", "tome no rabo"]
         .filter(x => message.toLowerCase().includes(x)).length > 0) {
@@ -38,6 +33,11 @@ async function chatsHandler(bot: IBot, message: string, context: IMessage, DATAB
 
     if (context.quotedMessage?.author.jid === bot.botNumber) {
         return await funcs.replyConciseMessage(context, DATABASE);
+    }
+
+    const filters = (await FILTERDB.getFilters(context.author.chatJid));
+    if (filters.length > 0) {
+        funcs.replyFilter(bot, context, filters);
     }
 }
 

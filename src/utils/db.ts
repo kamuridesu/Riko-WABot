@@ -32,6 +32,11 @@ export interface Member {
   groupSilenced: boolean;
 }
 
+export interface AIModelInfo {
+  model: string;
+  systemPrompt: string;
+}
+
 export class Database {
   db: DB | undefined;
   dbFile = path.join("states", "database.sqlite");
@@ -173,6 +178,33 @@ export class Database {
         return result.botChat == 1;
     }
     return false;
+  }
+
+  async setPrompt(chatJid: string, prompt: string) {
+    const query = `UPDATE chat SET modelPrompt=? WHERE jid = ?`;
+    await this.connect();
+    await this.db?.run(query, [prompt, chatJid]);
+  }
+
+  async setModel(chatJid: string, model: string) {
+    const query = `UPDATE chat SET aiModel=? WHERE jid = ?`;
+    await this.connect();
+    await this.db?.run(query, [model, chatJid]);
+  }
+
+  async getAiInfo(chatJid: string): Promise<AIModelInfo> {
+    const query = `SELECT modelPrompt, aiModel FROM chat WHERE jid = ?`;
+    await this.connect();
+    const result = await this.db?.get(query, [chatJid]);
+    const data = {
+      model: "llama3.1",
+      systemPrompt: ""
+    };
+    if (result) {
+      data.model = result.aiModel,
+      data.systemPrompt = result.modelPrompt
+    }
+    return data;
   }
 }
 

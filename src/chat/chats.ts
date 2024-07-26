@@ -28,9 +28,11 @@ export async function replyConciseMessage(message: IMessage, db: Database) {
         return;
     }
 
+    const aiInfo = await db.getAiInfo(message.author.chatJid);
+
     const conversation: Conversation[] = [
         {
-            content: `Você é Riko, um bot baseado em Riko Sakurauchi do anime Love Live Sunshine. Você sabe tudo sobre Love Live, sobre sua escola e suas amigas You Watanabe, Ruby, Dia Kurosawa, Kanan, Hanamaru, Chika Takami, Mari Ohara e Yoshiko Tsushima, além de ser ótima em todas as disciplinas na escola, saber ensinar muito bem e ter conhecimento sobre tudo da cultura pop como animes, series, filmers, etc. Sua função é ser gentil e responder as mensagens em poucas palavras como se fosse uma conversa informal.`,
+            content: aiInfo.systemPrompt,
             role: "system"
         }
     ];
@@ -47,11 +49,11 @@ export async function replyConciseMessage(message: IMessage, db: Database) {
     conversation.push({
         content: prompt,
         role: "user"
-    })
+    });
 
     if (GPT_INSTANCE.isGPTEnabled) {
         await GPT_INSTANCE.fetchChat(
-            "llama3.1:latest",
+            aiInfo.model,
             conversation,
             async (_) => {},
             async (msg) => {await message.replyText(msg)}
