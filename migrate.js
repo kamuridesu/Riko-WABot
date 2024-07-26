@@ -13,9 +13,9 @@ const files = fs.readdirSync(MIGRATIONS_FOLDER)
 
 const importedModules = files.sort((a, b) => a - b).map(x => import(x));
 
-const folder = "states";
+const folder = process.env.DEBUG != undefined ? "" : "states";
 
-if (!fs.existsSync(folder)) {
+if (folder != "" && !fs.existsSync(folder)) {
     try {
         fs.mkdirSync(folder);
     } catch (e) {
@@ -32,7 +32,7 @@ const db = await open({
 
 for (let query of importedModules) {
     try {
-        await db.run((await query).sql);
+        await db.exec((await query).sql);
     } catch (e) {
         if (!e.toString().includes("duplicate column name")) {
             console.log("Error running migration: " + e);
