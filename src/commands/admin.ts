@@ -274,7 +274,7 @@ export async function botConversation(message: IMessage, db: Database, disable =
 }
 
 export async function setBotPrompt(message: IMessage, args: string[], db: Database) {
-    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (message.chatIsGroup && !(await validateIsGroupAndAdmin(message))) return;
     if (args.length < 1) {
         await message.replyText("Preciso de algo para usar como prompt!");
         return message.react(Emojis.fail);
@@ -286,7 +286,7 @@ export async function setBotPrompt(message: IMessage, args: string[], db: Databa
 }
 
 export async function setBotModel(message: IMessage, args: string[], db: Database) {
-    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (message.chatIsGroup && !(await validateIsGroupAndAdmin(message))) return;
     if (args.length < 1) {
         await message.replyText("Preciso de algo para usar como model!");
         return message.react(Emojis.fail);

@@ -1,4 +1,6 @@
-FROM node:18-slim as build
+ARG BASE_IMAGE=node:18-slim
+
+FROM ${BASE_IMAGE} as build
 RUN apt update && apt install git -y
 WORKDIR /app
 COPY ./package.json .
@@ -6,13 +8,13 @@ RUN npm install --include=dev
 COPY . .
 RUN npm run build
 
-FROM node:18-slim as deps
+FROM ${BASE_IMAGE} as deps
 WORKDIR /app
 RUN apt update && apt install git -y
 COPY ./package.json .
 RUN npm i
 
-FROM node:18-slim as run
+FROM ${BASE_IMAGE} as run
 WORKDIR /app
 RUN apt update && apt install ffmpeg libwebp-dev libopus-dev -y
 COPY --from=deps /app/ .

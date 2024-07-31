@@ -12,7 +12,7 @@
   "license": "GPLv3",
   "type": "module",
   "dependencies": {
-    "@kamuridesu/kamtube": "^0.1.21",
+    "@kamuridesu/kamtube": "^0.1.3",
     "@kamuridesu/kamuanimejs": "^1.0.7",
     "@kamuridesu/simplelyrics": "^1.0.2",
     "@kamuridesu/whatframework": "^0.1.48-b",
