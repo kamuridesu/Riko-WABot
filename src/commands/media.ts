@@ -12,6 +12,7 @@ import {
   getRandomImageFromApi,
 } from "../utils/nekoapi.js";
 import { parseMessageToNameAndEpisode } from "../utils/parsers.js";
+import { downloadMedia } from "../utils/cobalt.js";
 
 export async function download(
   message: IMessage,
@@ -32,6 +33,8 @@ export async function download(
 
   let videoId = "";
   let videoTitle = "";
+
+  const mediaType = video_audio != "audio" ? "video" : "audio";
 
   const regex =
     /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
@@ -63,47 +66,23 @@ export async function download(
     videoId = urlParse(argument);
   }
 
-  await message.react(Emojis.waiting);
-
-  let video: {
-    title: string;
-    type: string;
-    extension: string;
-    data: ArrayBuffer;
-  } | null = null;
-
   try {
-    video = await youtube.download(
-      videoId,
-      video_audio,
-      video_audio == "audio" ? undefined : "360",
+    const video = await downloadMedia(`https://www.youtube.com/watch?v=${videoId}`);
+    if (video == null) {
+      await message.react(Emojis.fail);
+      return await message.replyText(`Houve um erro ao baixar ${mediaType}!`);
+    }
+
+    await message.replyMedia(video.blob as any,
+      mediaType,
+      `${mediaType}/mp4`,
+      video.filename
     );
+    return await message.react(Emojis.success);
   } catch (e) {
     console.log(e);
     await message.react(Emojis.fail);
     return await message.replyText("Houve um erro ao baixar");
-  }
-
-  console.log("Video downloaded!");
-
-  if (video != null) {
-    const mediaType = video_audio != "audio" ? "video" : "audio";
-    if (mediaType == "audio") {
-      video.data = await convertToOpus(video.data);
-    }
-    const sentMessage = await message.replyMedia(
-      video.data as any,
-      mediaType,
-      `${mediaType}/mp4`,
-      videoTitle,
-    );
-    if (sentMessage == undefined) {
-      return await message.react(Emojis.fail);
-    }
-    return await message.react(Emojis.success);
-  } else {
-    await message.react(Emojis.fail);
-    return await message.replyText("Houve um erro ao processar!");
   }
 }
 

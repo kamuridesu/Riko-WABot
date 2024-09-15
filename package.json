@@ -20,6 +20,7 @@
     "jimp": "^0.16.13",
     "link-preview-js": "^3.0.4",
     "nekosapi": "0.5.2",
+    "riko-wabot": "file:",
     "socks-proxy-agent": "^8.0.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
