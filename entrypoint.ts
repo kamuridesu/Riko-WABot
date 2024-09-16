@@ -20,6 +20,7 @@ class Entrypoint implements EntryPoint {
   botName = "Riko-chan";
   language = "pt-br";
   handler = new CommandHandler();
+  maxGroupsLimit = 100;
 
   constructor() {
     if (!existsSync("states/filter_media")) {
