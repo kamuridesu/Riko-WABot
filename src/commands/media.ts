@@ -31,8 +31,7 @@ export async function download(
   const youtube = new KamTube();
   let argument: string = args.join(" ");
 
-  let videoId = "";
-  let videoTitle = "";
+  let videoId = argument;
 
   const mediaType = video_audio != "audio" ? "video" : "audio";
 
@@ -55,19 +54,16 @@ export async function download(
           return await message.replyText("Erro! Nenhum vídeo encontrado!");
         }
       } while (result.type == "channel" || result.type == "playlist");
-      videoId = result.videoId as string;
-      videoTitle = result.title as string;
+      videoId = `https://www.youtube.com/watch?v=${result.videoId}`;
     } catch (e) {
       console.log(e);
       await message.react(Emojis.fail);
-      return await message.replyText("Houve um erro ao processar!");
+      return await message.replyText("Houve um erro ao pesquisar!");
     }
-  } else {
-    videoId = urlParse(argument);
   }
 
   try {
-    const video = await downloadMedia(`https://www.youtube.com/watch?v=${videoId}`);
+    const video = await downloadMedia(videoId);
     if (video == null) {
       await message.react(Emojis.fail);
       return await message.replyText(`Houve um erro ao baixar ${mediaType}!`);
