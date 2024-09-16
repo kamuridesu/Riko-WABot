@@ -27,6 +27,7 @@ export async function getCobaltStreamURL(fetchURL: string, kind: "video" | "audi
                 filenamePattern: "basic",
                 url: fetchURL,
                 isAudioOnly: kind == "audio",
+                vQuality: quality.toString()
             },
             responseType: "json"
         });
@@ -51,10 +52,14 @@ export async function downloadMedia(fetchURL: string, kind: "video" | "audio" = 
             url: media.url,
             responseType: "arraybuffer"
         });
-        return {
-            filename: req.headers["content-disposition"].split("filename=")[1].slice(1, -1),
+        const returnData = {
+            filename: "",
             blob: req.data
         }
+        if (req.headers["content-disposition"]) {
+            returnData.filename = req.headers["content-disposition"].split("filename=")[1].slice(1, -1);
+        }
+        return returnData;
     } catch (e) {
         console.log(e);
         return null;

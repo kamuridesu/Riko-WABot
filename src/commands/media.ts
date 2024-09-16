@@ -63,10 +63,15 @@ export async function download(
   }
 
   try {
-    const video = await downloadMedia(videoId);
+    await message.react(Emojis.waiting);
+    const video = await downloadMedia(videoId, mediaType);
     if (video == null) {
       await message.react(Emojis.fail);
       return await message.replyText(`Houve um erro ao baixar ${mediaType}!`);
+    }
+
+    if (mediaType === "audio") {
+      video.blob = await convertToOpus(video.blob);
     }
 
     await message.replyMedia(video.blob as any,
