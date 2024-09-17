@@ -110,15 +110,11 @@ export class GPT {
             },
         );
         let responseText = "";
-        let counter = 0;
         response.data.on('data', async (data: Buffer) => {
             const jsonData = JSON.parse(data.toString());
             if (!jsonData.done) {
                 responseText += jsonData.response;
-                if (counter % 50 == 0) {
-                    await editCallback(responseText);
-                }
-                counter++;
+                await editCallback(responseText);
             } else {
                 await finishCallback(responseText);
             }
@@ -140,15 +136,11 @@ export class GPT {
             },
         );
         let responseText = "";
-        let counter = 0;
         response.data.on('data', async (data: Buffer) => {
             const jsonData = JSON.parse(data.toString());
             if (!jsonData.done) {
                 responseText += jsonData.message.content;
-                if (counter % 50 == 0) {
-                    await editCallback(responseText);
-                }
-                counter++;
+                await editCallback(responseText);
             } else {
                 await finishCallback(responseText);
             }

@@ -83,7 +83,7 @@ export async function download(
   } catch (e) {
     console.log(e);
     await message.react(Emojis.fail);
-    return await message.replyText("Houve um erro ao baixar");
+    return await message.replyText("Houve um erro ao baixar, tente novamente em instantes. Caso o problema persista, use /bug Erro ao baixar " + mediaType);
   }
 }
 

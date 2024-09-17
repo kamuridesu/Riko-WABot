@@ -309,7 +309,7 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
             {
                 name: "roll",
                 description: "Rola um ou mais dados, ex: $prefix$command 20 1, rola 1d20",
-                aliases: ["roll"],
+                aliases: [],
                 func: (_: IBot, message: IMessage, args) => {games.rollDice(message, args)}
             }
         ]
