@@ -3,22 +3,22 @@ const ffmpeg = pkgff;
 
 import * as fs from "fs/promises";
 
-function processSync(media: string, outFileName: string){
-    return new Promise<void>((resolve,reject)=>{
-        ffmpeg()
-        .input(media)
-        .format("ogg")
-        .audioCodec("opus")
-        .audioChannels(1)
-        .addOutputOptions('-avoid_negative_ts make_zero')
-        .save(outFileName)
-        .on("end", () => {
-          return resolve();
-        })
-        .on("error", (err) => {
-            return reject(err);
-        });
-    });
+function processSync(media: string, outFileName: string) {
+  return new Promise<void>((resolve, reject) => {
+    ffmpeg()
+      .input(media)
+      .format("ogg")
+      .audioCodec("opus")
+      .audioChannels(1)
+      .addOutputOptions('-avoid_negative_ts make_zero')
+      .save(outFileName)
+      .on("end", () => {
+        return resolve();
+      })
+      .on("error", (err) => {
+        return reject(err);
+      });
+  });
 }
 
 export async function convertToOpus(media: ArrayBuffer) {

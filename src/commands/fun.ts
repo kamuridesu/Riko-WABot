@@ -4,9 +4,6 @@ import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import { unlink, writeFile } from "fs/promises";
 import { FilterDB, IS_DB_ENABLED } from "../utils/db.js";
 import { Emojis } from "../utils/emoji.js";
-import { GPT } from "../utils/gpt.js";
-
-const gptInstance = new GPT();
 
 export async function makeSticker(
   bot: IBot,
@@ -211,18 +208,6 @@ export async function casal(message: IMessage, bot: IBot) {
   await message.react(Emojis.success);
 }
 
-export async function gpt(message: IMessage, args: string[]) {
-  if (args == undefined)
-    return message.replyText("A mensagem não pode ser vazia!");
-  if (!gptInstance.isGPTEnabled)
-    return message.replyText("GPT não está configurado!");
-  // return await message.replyText(
-  //   "GPT desativado por tempo indefinido, quando voltar mando um anuncio.",
-  // );
-  await message.react(Emojis.waiting);
-  return gptInstance.generate(message);
-}
-
 export async function copyMedia(message: IMessage) {
   await message.react(Emojis.waiting);
   if (!["imageMessage", "videoMessage"].includes(message.quotedMessageType)) {
@@ -231,13 +216,19 @@ export async function copyMedia(message: IMessage) {
   }
   const messageMedia = message.hasQuotedMessage
     ? JSON.parse(
-        JSON.stringify(message.originalMessage).replace("quotedM", "m"),
-      ).message.extendedTextMessage.contextInfo
+      JSON.stringify(message.originalMessage).replace("quotedM", "m"),
+    ).message.extendedTextMessage.contextInfo
     : message.originalMessage;
-  const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
-  const type: string = message.quotedMessageType.replace("Message", "");
-  await message.replyMedia(mediaBuffer as any, type);
-  await message.react(Emojis.success);
+  try {
+    const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
+    const type: string = message.quotedMessageType.replace("Message", "");
+    await message.replyMedia(mediaBuffer as any, type);
+    await message.react(Emojis.success);
+  } catch (e) {
+    console.log(messageMedia)
+    await message.react(Emojis.fail);
+    return message.replyText("Erro! não consegui ler a mensagem.");
+  }
 }
 
 export async function registerFilter(

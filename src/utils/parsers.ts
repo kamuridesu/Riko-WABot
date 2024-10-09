@@ -20,14 +20,3 @@ export function parseMessageToNameAndEpisode(message: string) {
         ep: epNumber
     };
 }
-
-export function parseMessageToModelAndMessage(message: string) {
-    let { arg, message: msg } = parseArgument(message, "model=")
-    if (!arg) {
-        arg = "llama3.1:latest"
-    }
-    return {
-        prompt: msg,
-        model: arg
-    }
-}

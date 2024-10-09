@@ -175,7 +175,7 @@ export class Database {
     await this.connect();
     const result = await this.db?.get(query, [chatJid]);
     if (result) {
-        return result.botChat == 1;
+      return result.botChat == 1;
     }
     return false;
   }
@@ -202,10 +202,43 @@ export class Database {
     };
     if (result) {
       data.model = result.aiModel,
-      data.systemPrompt = result.modelPrompt
+        data.systemPrompt = result.modelPrompt
     }
     return data;
   }
+
+  async getLastBotInteraction(chatJid: string): Promise<number> {
+    const query = `SELECT lastBotInteraction FROM chat WHERE jid = ?`;
+    await this.connect();
+    const result = await this.db?.get(query, [chatJid]);
+    if (result) {
+      return result.lastBotInteraction;
+    }
+    return 0;
+  }
+
+  async bumpLastBotInteraction(chatJid: string) {
+    const query = `UPDATE chat SET lastBotInteraction = ? WHERE jid = ?`;
+    await this.connect();
+    await this.db?.run(query, [Date.now(), chatJid]);
+  }
+
+  async getBotIsStopped(chatJid: string): Promise<boolean> {
+    const query = `SELECT stopped FROM chat WHERE jid = ?`;
+    await this.connect();
+    const result = await this.db?.get(query, [chatJid]);
+    if (result) {
+      return result.stopped == 1;
+    }
+    return false;
+  }
+
+  async setBotStopped(chatJid: string, lock = true) {
+    const query = `UPDATE chat SET stopped = ? WHERE jid = ?`;
+    await this.connect();
+    await this.db?.run(query, [lock ? 1 : 0, chatJid]);
+  }
+
 }
 
 export class PointsDB extends Database {

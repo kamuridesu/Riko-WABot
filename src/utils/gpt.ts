@@ -1,13 +1,4 @@
-import { IMessage } from '@kamuridesu/whatframework/@types/types.js';
 import axios from 'axios';
-import { Emojis } from './emoji.js';
-import { parseMessageToModelAndMessage } from './parsers.js';
-
-interface MessageData {
-    message: IMessage;
-    done: boolean;
-    running: boolean;
-}
 
 export interface Conversation {
     role: "system" | "user" | "assistant";
@@ -36,25 +27,22 @@ export interface Model {
 type EditCallback = (message: string) => Promise<any>;
 type FinishCallback = (message: string) => Promise<any>;
 
+
 const GPTURL = process.env.GPT_HOST;
-export const IS_GPT_ENABLED = GPTURL != undefined;
+export let IS_GPT_ENABLED = GPTURL != undefined;
+
+(async () => {
+    try {
+        const response = await axios.head(`http://${GPTURL}/`);
+        IS_GPT_ENABLED = response.status === 200;
+    } catch (error) {
+        console.error("Error checking GPT status:", error);
+        IS_GPT_ENABLED = false;
+    }
+})();
 
 export class GPT {
-    fila: MessageData[] = [];
-    maxMessage = 2;
-    running = 0;
-    interval: NodeJS.Timeout | undefined = undefined;
     isGPTEnabled = IS_GPT_ENABLED
-
-    async generate(message: IMessage) {
-        const messageData = {
-            message,
-            done: false,
-            running: false
-        }
-        this.fila.push(messageData);
-        await this.process();
-    }
 
     async getModels(): Promise<Model[]> {
         const response = await axios.get(
@@ -67,32 +55,6 @@ export class GPT {
             return response.data.models;
         }
         return []
-    }
-
-    async process() {
-        if (this.interval == undefined) {
-            const interval = setInterval(async () => {
-                let promises: Promise<void>[] = [];
-                this.fila = this.fila.filter(item => !item.done);
-                if (this.fila.filter(item => item.running).length < this.maxMessage) {
-                    for (let i = 0; i < this.fila.length - promises.length; i++) {
-                        const item = this.fila[i];
-                        if (item.running) break;
-                        promises.push(this.generateTextReply(item));
-                        if (i % this.maxMessage == 0) {
-                            await Promise.all(promises);
-                            promises = [];
-                        }
-                    }
-                    await Promise.all(promises);
-                }
-                if (this.fila.length == 0) {
-                    this.interval = undefined;
-                    clearInterval(interval);
-                }
-            }, 1000);
-            this.interval = interval;
-        }
     }
 
     async fetchStreamingMessage(model: string, messageText: string, editCallback: EditCallback, finishCallback: FinishCallback) {
@@ -126,6 +88,7 @@ export class GPT {
     }
 
     async fetchChat(model: string, conversation: Conversation[], editCallback: EditCallback, finishCallback: FinishCallback) {
+        const controller = new AbortController();
         const response = await axios.post(
             `http://${GPTURL}/api/chat`,
             JSON.stringify({
@@ -136,7 +99,8 @@ export class GPT {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                responseType: "stream"
+                responseType: "stream",
+                signal: controller.signal
             },
         );
         let responseText = "";
@@ -149,64 +113,14 @@ export class GPT {
                     await editCallback(responseText);
                 }
                 counter++;
+                if (counter > 5096) {
+                    controller.abort()
+                    await finishCallback("Oopsie, parece que não consegui pensar em nada para responder");
+                    return;
+                }
             } else {
                 await finishCallback(responseText);
             }
         });
     }
-
-    async generateTextReply(message: MessageData) {
-        message.running = true;
-        const { prompt, model } = parseMessageToModelAndMessage(message.message.body)
-        const messageText = "Utilize 200 caracteres ou menos: " + prompt.split(' ').slice(1).join(" ").replace(/\n/gi, ". ").replace("\"", "'");
-        console.log(messageText);
-        try {
-            const sentMessage = await message.message.replyText(" ");
-            await this.fetchStreamingMessage(
-                model,
-                messageText,
-                async (msg) => {await sentMessage!.edit(msg)},
-                async (msg) => {await sentMessage!.edit(msg); await message.message.react(Emojis.success)}
-            );
-        } catch (e) {
-            console.log(e)
-            message.message.react(Emojis.fail);
-            message.message.replyText("GPT falhou");
-        }
-        message.done = true;
-        message.running = false;
-    }
-}
-
-
-async function main() {
-    const model = "llama3.1:latest";
-    const gpt = new GPT();
-    let t = "";
-    const conversation: Conversation[] = [
-        {
-            content: "why is the sky blue?",
-            role: "user",
-        },
-        {
-            content: "Because I want it to be",
-            role: 'assistant'
-        },
-        {
-            content: "But why do you want it to be blue?",
-            role: 'user'
-        }
-    ]
-    await gpt.fetchChat(model,
-        conversation,
-        async (m) => {console.log(m)},
-        async msg => {console.log(msg)}
-    )
-}
-
-
-if (process.env.DEBUG) {
-    (async () => {
-        await main()
-    })();
 }

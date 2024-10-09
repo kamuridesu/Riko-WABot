@@ -15,7 +15,7 @@ export const Socks5Proxy: CustomProxy = {
     host: process.env.PROXY_HOST!,
     port: parseInt(process.env.PROXY_PORT!),
     auth: {
-      username: process.env.PROXY_USER != undefined ? process.env.PROXY_USER : "",
-      password: process.env.PROXY_PASS != undefined ? process.env.PROXY_PASS : ""
+        username: process.env.PROXY_USER != undefined ? process.env.PROXY_USER : "",
+        password: process.env.PROXY_PASS != undefined ? process.env.PROXY_PASS : ""
     }
 }

@@ -1,7 +1,7 @@
 import {
-  EntryPoint,
-  IBot,
-  IMessage,
+    EntryPoint,
+    IBot,
+    IMessage,
 } from "@kamuridesu/whatframework/@types/types.js";
 import { CommandHandler } from "@kamuridesu/whatframework/libs/handlers.js";
 import { existsSync, mkdirSync } from "fs";
@@ -15,51 +15,59 @@ const FILTERDB = new FilterDB();
 const POINTSDB = new PointsDB();
 
 class Entrypoint implements EntryPoint {
-  prefix = "/";
-  ownerNumber = process.env.OWNER as string;
-  botName = "Riko-chan";
-  language = "pt-br";
-  handler = new CommandHandler();
-  maxGroupsLimit = 100;
+    prefix = "/";
+    ownerNumber = process.env.OWNER as string;
+    botName = "Riko-chan";
+    language = "pt-br";
+    handler = new CommandHandler();
+    maxGroupsLimit = 100;
 
-  constructor() {
-    if (!existsSync("states/filter_media")) {
-      mkdirSync("states/filter_media", { recursive: true });
+    constructor() {
+        if (!existsSync("states/filter_media")) {
+            mkdirSync("states/filter_media", { recursive: true });
+        }
+        registerCommands(this.handler, DATABASE, FILTERDB, POINTSDB);
     }
-    registerCommands(this.handler, DATABASE, FILTERDB, POINTSDB);
-  }
 
-  async chatHandlers(bot: IBot, message: string, context: IMessage) {
-    await chatsHandler(bot, message, context, DATABASE, FILTERDB);
-  }
-
-  async commandHandlers(
-    bot: IBot,
-    command: string,
-    args: string[],
-    context: IMessage,
-  ) {
-    const user = await DATABASE.getMember(
-      context.author.chatJid,
-      context.author.jid,
-    );
-    if (user?.groupSilenced) {
-      await bot.connection?.sendMessage(context.author.chatJid, {
-        delete: context.originalMessage.key,
-      });
-      return;
+    async chatHandlers(bot: IBot, message: string, context: IMessage) {
+        await chatsHandler(bot, message, context, DATABASE, FILTERDB, this.handler);
     }
-    this.handler.handle(command, bot, context, args);
-  }
 
-  async addMemberHandlers(
-    ctx: IBot,
-    data: { id: string; author: string; participants: string[] },
-  ) {
-    await getWelcomeMessage(ctx, data.id, DATABASE, data.participants);
-  }
+    async commandHandlers(
+        bot: IBot,
+        command: string,
+        args: string[],
+        context: IMessage,
+    ) {
+        const user = await DATABASE.getMember(
+            context.author.chatJid,
+            context.author.jid,
+        );
+        if (user?.groupSilenced) {
+            await bot.connection?.sendMessage(context.author.chatJid, {
+                delete: context.originalMessage.key,
+            });
+            return;
+        }
 
-  async removeMemberHandlers() {}
+        const botIsStopped = await DATABASE.getBotIsStopped(context.author.chatJid);
+        if (botIsStopped && command != "start") {
+            return;
+        }
+
+        await DATABASE.bumpLastBotInteraction(context.author.chatJid);
+
+        this.handler.handle(command, bot, context, args);
+    }
+
+    async addMemberHandlers(
+        ctx: IBot,
+        data: { id: string; author: string; participants: string[] },
+    ) {
+        await getWelcomeMessage(ctx, data.id, DATABASE, data.participants);
+    }
+
+    async removeMemberHandlers() { }
 }
 
 export { Entrypoint };

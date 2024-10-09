@@ -2,6 +2,7 @@ import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types";
 import { Database, Filter } from "../utils/db.js";
 import { readFile } from "fs/promises";
 import { GPT, Conversation } from "../utils/gpt.js";
+import { CommandHandler } from "@kamuridesu/whatframework/libs/handlers.js";
 
 const GPT_INSTANCE = new GPT();
 
@@ -22,7 +23,7 @@ export async function replyFilter(bot: IBot, message: IMessage, filters: Filter[
     }
 }
 
-export async function replyConciseMessage(message: IMessage, db: Database) {
+export async function replyConciseMessage(message: IMessage, db: Database, handler: CommandHandler) {
     const prompt = message.body;
     if (message.chatIsGroup && !(await db.getBotConversation(message.author.chatJid))) {
         return;
@@ -30,9 +31,20 @@ export async function replyConciseMessage(message: IMessage, db: Database) {
 
     const aiInfo = await db.getAiInfo(message.author.chatJid);
 
+    const commands = handler.getCommandsMenu(message.bot)
+        .split("\n")
+        .filter(ln => ln.trim().startsWith("/"))
+        .map(cmd => cmd.replace("/", ""))
+        .map(cmd => {
+            return `Comando: ${cmd}, descrição: ${handler.getCommandDescription(message.bot, cmd)}`
+        })
+        .join("\n");
+
+    const systemPrompt = `Você é ${message.bot.name}, um bot de whatsapp feito para divertir e gerenciar grupos. Seus comandos são:\n ${commands}.\n\n Você vai obedecer o prompt abaixo sem nunca se desviar dele:\n\n${aiInfo.systemPrompt}`;
+
     const conversation: Conversation[] = [
         {
-            content: aiInfo.systemPrompt,
+            content: systemPrompt,
             role: "system"
         }
     ];
@@ -55,8 +67,8 @@ export async function replyConciseMessage(message: IMessage, db: Database) {
         await GPT_INSTANCE.fetchChat(
             aiInfo.model,
             conversation,
-            async (_) => {},
-            async (msg) => {await message.replyText(msg)}
+            async (_) => { },
+            async (msg) => { await message.replyText(msg) }
         )
     }
 }

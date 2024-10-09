@@ -57,7 +57,7 @@ export async function downloadMedia(fetchURL: string, kind: "video" | "audio" = 
             blob: req.data
         }
         if (req.headers["content-disposition"]) {
-            returnData.filename = req.headers["content-disposition"].split("filename=")[1].slice(1, -1);
+            returnData.filename = req.headers["content-disposition"].split("filename=")[1].split(";")[0].slice(1, -1);
         }
         return returnData;
     } catch (e) {

@@ -1,7 +1,7 @@
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { Database, PointsDB } from "../utils/db.js";
 import { Emojis } from "../utils/emoji.js";
-import { validateIsGroupAndAdmin } from "./admin.js";
+import { validateIsGroupAndAdmin } from "./helpers.js";
 
 export async function changePoints(
   message: IMessage,

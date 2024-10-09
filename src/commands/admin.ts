@@ -3,50 +3,14 @@ import { IBot } from "@kamuridesu/whatframework/@types/types.js";
 import { Database } from "../utils/db.js";
 import { Emojis } from "../utils/emoji.js";
 import { GPT } from "../utils/gpt.js";
+import { validateBotIsAdmin, validateIsGroupAndAdmin, isOwner } from "./helpers.js";
 
-export async function validateBotIsAdmin(message: IMessage) {
-    let returnValue = true;
-    const admins = (await message.bot.connection!
-        .groupMetadata(message.author.chatJid))
-        .participants
-        .filter(x => x.admin != null)
-        .map(x => x.id);
-    if (!admins.includes(message.bot.botNumber!)) {
-        await message.react(Emojis.fail);
-        await message.replyText("Erro! O bot precisa ser admin para usar este comando!");
-        returnValue = false;
-    }
-    return returnValue;
-}
 
-export async function validateIsGroupAndAdmin(message: IMessage) {
-    if (!message.chatIsGroup) {
-        await message.react(Emojis.fail);
-        await message.replyText("Erro! Este comando pode ser usado apenas em grupos!");
-        return false;
-    }
-
-    const groupMembers = (await message.bot.connection!
-                            .groupMetadata(message.author.chatJid))
-                            .participants
-                            .filter(x => x.admin != null)
-                            .map(x => x.id);
-    if (!groupMembers.includes(message.author.jid)) {
-        await message.react(Emojis.fail);
-        await message.replyText("Erro! Apenas ADMINs podem usar este comando!");
-        return false;
-    }
-    return true;
-}
-
-async function isOwner(message: IMessage) {
-    let returnValue = true;
-    if (message.author.jid != message.bot.ownerNumber + "@s.whatsapp.net") {
-        await message.react(Emojis.fail);
-        await message.replyText("Erro! Este comando pode ser usado apenas pelo DONO!");
-        returnValue = false;
-    }
-    return returnValue;
+export async function stopBot(message: IMessage, db: Database) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    await db.setBotStopped(message.author.chatJid);
+    await message.react(Emojis.success);
+    return await message.replyText("Bot desativado! Para ativar, basta usar /start");
 }
 
 export async function mentionAll(message: IMessage, args: string[]) {
@@ -59,7 +23,7 @@ export async function mentionAll(message: IMessage, args: string[]) {
 
     if (message.quotedMessageType == "conversation") {
         await message.bot.sendTextMessage(
-            message.author.chatJid, message.quotedMessage!.body, {mentions: membersIds}
+            message.author.chatJid, message.quotedMessage!.body, { mentions: membersIds }
         );
         return await message.react(Emojis.success);
     }
@@ -163,7 +127,7 @@ export async function banUsersBellowThreshold(message: IMessage, args: string[],
     return await message.replyText("Membros removidos!");
 }
 
-export async function getAllUsersMessages(message: IMessage, db: Database)  {
+export async function getAllUsersMessages(message: IMessage, db: Database) {
     if (!message.chatIsGroup) {
         await message.react(Emojis.fail);
         await message.replyText("Erro! Este comando pode ser usado apenas em grupos!");
@@ -171,8 +135,8 @@ export async function getAllUsersMessages(message: IMessage, db: Database)  {
     }
     const allMembers = (await message.group!.members).map(x => x.id);
     const usersWithMessage = (await db.getAllMembers(message.author.chatJid))
-                            .filter(x => x.msgCount != null && x.msgCount > 0)
-                            .filter(x => allMembers?.includes(x.jid))
+        .filter(x => x.msgCount != null && x.msgCount > 0)
+        .filter(x => allMembers?.includes(x.jid))
     let response = "Mensagens por membro: \n";
     for (let member of usersWithMessage) {
         response += "- " + member.jid + ": " + member.msgCount + " mensagens\n";
