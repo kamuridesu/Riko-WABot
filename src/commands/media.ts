@@ -1,6 +1,5 @@
 import { KamTube, SearchAPIResponse } from "@kamuridesu/kamtube";
-import { urlParse } from "@kamuridesu/kamtube/src/parsers.js";
-import { Anime } from "@kamuridesu/kamuanimejs/dist/src/anime.js";
+import { isAnimeEnabled, DownloadAnime } from "../utils/anime.js";
 import { Letras } from "@kamuridesu/simplelyrics";
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { TagNames, Tags } from "nekosapi/v3/types/Tags.js";
@@ -38,6 +37,8 @@ export async function download(
   const regex =
     /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
   if (!regex.test(argument)) {
+    await message.react(Emojis.fail);
+    return await message.replyText("Infelizmente o YouTube bloqueou o bot, estou trabalhando para resolver isso mas deve demorar um pouco.");
     try {
       let result: SearchAPIResponse;
       let c = 0;
@@ -60,6 +61,11 @@ export async function download(
       await message.react(Emojis.fail);
       return await message.replyText("Houve um erro ao pesquisar!");
     }
+  }
+
+  if (videoId.includes("youtube.com") || videoId.includes("youtu.be")) {
+    await message.react(Emojis.fail);
+    return await message.replyText("Infelizmente o YouTube bloqueou o bot, estou trabalhando para resolver isso mas deve demorar um pouco.");
   }
 
   try {
@@ -87,35 +93,6 @@ export async function download(
   }
 }
 
-export async function thumbnail(message: IMessage, args: string[]) {
-  if (args.length < 1) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Faltando link da imagem!");
-  }
-  if (args.length > 1) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Mais de um argumento recebido!");
-  }
-  const argument = args.join(" ");
-  const regex =
-    /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
-  if (!regex.test(argument)) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Link inválido!");
-  }
-  try {
-    const youtube = new KamTube();
-    const videoId = urlParse(argument);
-    const thumb = await youtube.getThumbnail(videoId);
-    if (!thumb) throw new Error("Thumb não encontrada!");
-    await message.replyMedia({ image: thumb } as any, "image", "image/jpg");
-    return await message.react(Emojis.success);
-  } catch (e) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Erro ao enviar imagem");
-  }
-}
-
 export async function getLyrics(message: IMessage, args: string[]) {
   let error = "Erro desconhecido!";
   let reaction = Emojis.fail;
@@ -137,29 +114,6 @@ export async function getLyrics(message: IMessage, args: string[]) {
   }
   await message.react(reaction);
   return await message.replyText(error);
-}
-
-export async function getAnime(message: IMessage, textMessage: string) {
-  const anime = new Anime();
-  await message.react(Emojis.searching);
-  try {
-    let { title, ep } = parseMessageToNameAndEpisode(
-      textMessage.toLocaleLowerCase(),
-    );
-    message.react(Emojis.waiting);
-    const data = await anime.downloadAnime(title, ep);
-    await message.replyMedia(
-      data.data as any,
-      "video",
-      "video/mp4",
-      `${data.title} - ${ep}`,
-    );
-    return await message.react(Emojis.success);
-  } catch (e) {
-    console.log(e);
-    message.react(Emojis.fail);
-    return message.replyText(String(e));
-  }
 }
 
 export async function getImageNekosApi(message: IMessage, args: string[]) {
@@ -188,18 +142,32 @@ export async function getImageNekosApi(message: IMessage, args: string[]) {
   message.react(Emojis.success);
 }
 
-export async function getImagesTags(message: IMessage, isNsfw = false) {
-  const api = new NekosAPIAxiosProxy();
-  message.react(Emojis.searching);
+export async function downloadAnime(message: IMessage, args: string[]) {
+  if (args.length < 1) {
+    await message.react(Emojis.fail);
+    return await message.replyText("Por favor, escolha um anime para baixar!");
+  }
+  const { title, season, episode } = parseMessageToNameAndEpisode(args.join(" "));
+  if (title == null) {
+    await message.react(Emojis.fail);
+    return await message.replyText("Por favor, escolha um anime para baixar!");
+  }
+  if (episode == null) {
+    await message.react(Emojis.fail);
+    return await message.replyText("Por favor, escolha um episódio para baixar! (Ex: /anime Naruto ep=1)");
+  }
+  await message.react(Emojis.waiting);
   try {
-    const tags = (await api.getAllTags()).filter(
-      (tag) => tag.is_nsfw == isNsfw,
-    );
-    const allTags = tags.map((tag) => tag.name).join("\n");
-    message.react(Emojis.success);
-    await message.replyText(allTags);
+    const download = await DownloadAnime(title, episode, season);
+    if (download == null) {
+      await message.react(Emojis.fail);
+      return await message.replyText("Erro! Não foi possível baixar o anime!");
+    }
+    await message.replyMedia({media: (download.data as Buffer).buffer as Buffer, messageType: "video", mimeType: "media/mp4", error: undefined}, "video", undefined, download.title);
+    await message.react(Emojis.success);
   } catch (e) {
-    message.react(Emojis.fail);
-    await message.replyText("Algo deu errado!");
+    console.log(e);
+    await message.react(Emojis.fail);
+    return await message.replyText("Erro! Não foi possível baixar o anime!");
   }
 }

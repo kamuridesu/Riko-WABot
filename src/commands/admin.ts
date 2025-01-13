@@ -239,10 +239,6 @@ export async function botConversation(message: IMessage, db: Database, disable =
 
 export async function setBotPrompt(message: IMessage, args: string[], db: Database) {
     if (message.chatIsGroup && !(await validateIsGroupAndAdmin(message))) return;
-    if (args.length < 1) {
-        await message.replyText("Preciso de algo para usar como prompt!");
-        return message.react(Emojis.fail);
-    }
 
     const prompt = args.join(" ");
     await db.setPrompt(message.author.chatJid, prompt);
@@ -271,6 +267,62 @@ export async function getAiInfo(message: IMessage, db: Database) {
 
     await message.replyText(`Model: ${result.model}\nPrompt: ${result.systemPrompt}`);
     await message.react(Emojis.success);
+}
+
+export async function warnUser(message: IMessage, db: Database, remove = false) {
+    if (!(await validateIsGroupAndAdmin(message))) return;
+    if (message.mentionedUsers.length < 1 && !message.hasQuotedMessage) {
+        await message.react(Emojis.fail);
+        return await message.replyText("Erro! Preciso que algum usuário seja mencionado!");
+    }
+
+    let errorMessage = "";
+    const users = [...message.mentionedUsers, message.quotedMessage?.author?.jid].filter(Boolean) as string[];
+    let finalMessage = "";
+    try {
+        for (let user of users) {
+            const dbUser = await db.addToWarningCount(user, message.author.chatJid, remove);
+            if (remove) {
+                finalMessage += `Usuário ${user} teve um aviso removido! Total de avisos: ${dbUser.warn}\n`;
+            }
+            else if (dbUser.warn > 3) {
+                try {
+                    await message.bot.connection?.groupParticipantsUpdate(message.author.chatJid, [user], "remove");
+                    await db.updateWarningCount(user, message.author.chatJid, 0);
+                    await message.replyText(`Usuário ${user} foi banido por excesso de avisos!`);
+                } catch (e) {
+                    await db.addToWarningCount(user, message.author.chatJid, true);
+                    errorMessage = "Erro ao banir usuário!";
+                }
+            }
+            else {
+                finalMessage += `Usuário ${user} recebeu um aviso! Total de avisos: ${dbUser.warn}, mais ${4 - dbUser.warn} e será banido\n`;
+            }
+                
+        }
+    } catch (e) {
+        console.log(e);
+        errorMessage = "Erro ao adicionar aviso!"
+    }
+
+    if (errorMessage != "") {
+        await message.react(Emojis.fail);
+        return await message.replyText(errorMessage);
+    }
+    await message.react(Emojis.success);
+    if (finalMessage != "") await message.replyText(finalMessage);
+}
+
+export async function listUsersWithWarn(message: IMessage, db: Database) {
+    const usersWithWarn = await db.getAllMembers(message.author.chatJid);
+    let response = "Usuários com avisos: \n";
+    for (let member of usersWithWarn) {
+        if (member.warn > 0) {
+            response += `- ${member.jid}: ${member.warn} avisos\n`;
+        }
+    }
+    await message.replyText(response);
+    return await message.react(Emojis.success);
 }
 
 export const demote = (message: IMessage) => changeRole(message, 'demote');

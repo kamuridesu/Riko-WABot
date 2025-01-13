@@ -8,3 +8,6 @@ modules
 *test*
 proxychains.conf
 .env
+files.json
+*.jpg
+*.png

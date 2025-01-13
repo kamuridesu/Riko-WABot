@@ -24,7 +24,7 @@ export interface Model {
     quantization_level: string;
 }
 
-type EditCallback = (message: string) => Promise<any>;
+type EditCallback = (message: string, controller?: AbortController) => Promise<any>;
 type FinishCallback = (message: string) => Promise<any>;
 
 
@@ -109,9 +109,7 @@ export class GPT {
             const jsonData = JSON.parse(data.toString());
             if (!jsonData.done) {
                 responseText += jsonData.message.content;
-                if (counter % 50 == 0) {
-                    await editCallback(responseText);
-                }
+                await editCallback(responseText, controller);
                 counter++;
                 if (counter > 5096) {
                     controller.abort()

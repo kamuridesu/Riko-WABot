@@ -73,35 +73,17 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 func: (_: IBot, message: IMessage, args: string[]) => { media.getLyrics(message, args) }
             },
             {
-                name: "thumbnail",
-                description: "Baixa e envia uma thumbnail de um video no youtube",
-                aliases: [],
-                func: (_: IBot, message: IMessage, args: string[]) => { media.thumbnail(message, args) }
-            },
-            {
-                name: "anime",
-                description: "Baixa anime. Exemplo: $prefix$command symphogear ep=1",
-                aliases: [],
-                func: (_: IBot, message: IMessage, args: string[]) => { media.getAnime(message, args.join(" ")) }
-            },
-            {
                 name: "animage",
                 description: "Envia uma imagem aleatoria",
                 aliases: ["rdi", "image"],
                 func: (_, message, args) => { media.getImageNekosApi(message, args) }
             },
             {
-                name: "tagsfw",
-                description: "Envia todas as tags para imagens",
+                name: "anime",
+                description: "Envia um anime, uso: $prefix$command nome do anime ep=numero do episodio",
                 aliases: [],
-                func: (_, message) => { media.getImagesTags(message) }
-            },
-            {
-                name: "tagnsfw",
-                description: "Envia todas as tags para imagens",
-                aliases: [],
-                func: (_, message) => { media.getImagesTags(message, true) }
-            },
+                func: async (_, message, args) => { media.downloadAnime(message, args) }
+            }
 
         ]
     }
@@ -234,6 +216,24 @@ export function registerCommands(handler: CommandHandler, DATABASE: Database, FI
                 description: "Lista o numero de mensagem por membros",
                 aliases: ["rmsg"],
                 func: (_, message) => { admin.resetMessageCounter(message, DATABASE) }
+            },
+            {
+                name: "warn",
+                description: "Da um aviso a membro mencionado",
+                aliases: ["aviso"],
+                func: (_, message) => { admin.warnUser(message, DATABASE) } 
+            },
+            {
+                name: "rwarn",
+                description: "Remove um aviso a membro mencionado",
+                aliases: ["removeaviso"],
+                func: (_, message) => { admin.warnUser(message, DATABASE, true) } 
+            },
+            {
+                name: "lwarn",
+                description: "Lista os avisos de um membro",
+                aliases: ["avisos"],
+                func: (_, message) => { admin.listUsersWithWarn(message, DATABASE) }
             },
             {
                 name: "ban",

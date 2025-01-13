@@ -1,6 +1,5 @@
 import { IBot, IMessage } from "@kamuridesu/whatframework/@types/types.js";
 import { createSticker } from "@kamuridesu/whatframework/libs/sticker.js";
-import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import { unlink, writeFile } from "fs/promises";
 import { FilterDB, IS_DB_ENABLED } from "../utils/db.js";
 import { Emojis } from "../utils/emoji.js";
@@ -220,7 +219,7 @@ export async function copyMedia(message: IMessage) {
     ).message.extendedTextMessage.contextInfo
     : message.originalMessage;
   try {
-    const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
+    const mediaBuffer = (await message.downloadMedia()).media;
     const type: string = message.quotedMessageType.replace("Message", "");
     await message.replyMedia(mediaBuffer as any, type);
     await message.react(Emojis.success);
@@ -248,10 +247,11 @@ export async function registerFilter(
   }
 
   if (
-    !["conversation", "imageMessage", "stickerMessage"].includes(
+    !["conversation", "imageMessage", "stickerMessage", "extendedTextMessage"].includes(
       message.quotedMessageType,
     )
   ) {
+    console.log(message.quotedMessageType);
     await message.replyText(
       "Apenas mensagens de texto, sticker e imagens são suportadas no momento!",
     );
@@ -275,7 +275,7 @@ export async function registerFilter(
     return await message.react(Emojis.fail);
   }
 
-  if (message.quotedMessageType == "conversation") {
+  if (["conversation"].includes(message.quotedMessageType)) {
     await db.addFilterIfNotExists(
       message.author.chatJid,
       message.quotedMessageType,
@@ -288,7 +288,7 @@ export async function registerFilter(
     const mediaMsg = JSON.parse(
       JSON.stringify(message.originalMessage).replace("quotedM", "m"),
     ).message.extendedTextMessage.contextInfo;
-    const buffer = await downloadMediaMessage(mediaMsg, "buffer", {});
+    const buffer = (await message.downloadMedia()).media;
     const randomFilename = `states/filter_media/${Math.random() * 1000}.png`;
     await writeFile(randomFilename, buffer);
     await db.addFilterIfNotExists(
@@ -318,7 +318,10 @@ export async function removeFilter(
   const filter = (await db.getFilters(message.author.chatJid)).find(
     (x) => x.pattern == strFilter,
   );
-  if (!(filter?.kind == "conversation")) {
+  if (filter?.kind === undefined) {
+    return;
+  }
+  if ((["imageMessage", "stickerMessage"].includes(filter?.kind))) {
     try {
       await unlink(filter!.response);
     } catch (e) {

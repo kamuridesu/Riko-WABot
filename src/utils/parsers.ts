@@ -10,13 +10,22 @@ function parseArgument(message: string, argument: string) {
 }
 
 export function parseMessageToNameAndEpisode(message: string) {
-    let { arg, message: msg } = parseArgument(message, "ep=");
-    if (!arg) {
-        throw new Error("Faltando o número do episódio!");
+    let title: string = "";
+    let episode: string = "";
+    let season: string = "";
+    let messageArray = message.split(" ");
+    const seasonAndEpisode = messageArray.find(s => /s[0-9]+e[0-9]+/.test(s))
+    title = messageArray.filter(e => e != seasonAndEpisode).join(" ");
+    if (seasonAndEpisode) {
+        const [s, e] = seasonAndEpisode.split("e");
+        season = s.replace("s", "");
+        episode = e;
     }
-    const epNumber = parseFloat(arg);
+    const intSeason = parseInt(season);
+    const intEpisode = parseInt(episode);
     return {
-        title: msg,
-        ep: epNumber
-    };
+        title,
+        season: intSeason,
+        episode: intEpisode
+    }
 }

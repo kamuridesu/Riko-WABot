@@ -9,3 +9,4 @@ Dockerfile
 states
 temp
 modules
+.env

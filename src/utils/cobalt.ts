@@ -1,9 +1,29 @@
 import axios from "axios";
 
+export interface CobaltErrorContext {
+    service: string;
+    limit: number;
+}
+
+export interface CobaltError {
+    code: number;
+    context: CobaltErrorContext;
+}
+
+export interface PickerResponse {
+    type: 'photo' | 'video' | 'gif';
+    url: string;
+    thumb?: string;
+}
+
 export interface CobaltResponse {
-    status: "error" | "stream";
+    status: "error" | "picker" | "tunnel" | "redirect";
     url?: string;
-    text?: string;
+    filename?: string;
+    audio?: string;
+    audioFilename?: string;
+    picker?: PickerResponse[];
+    error?: CobaltError;
 }
 
 export interface Result {
@@ -18,22 +38,23 @@ export async function getCobaltStreamURL(fetchURL: string, kind: "video" | "audi
     try {
         const req = await axios({
             method: "post",
-            url: "https://api.cobalt.tools/api/json",
+            url: "http://cobalt.kamuridesu.com",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
+                Authorization: "Api-Key " + process.env.COBALT_API_KEY
             },
             data: {
-                filenamePattern: "basic",
+                filenameStyle: "basic",
                 url: fetchURL,
-                isAudioOnly: kind == "audio",
-                vQuality: quality.toString()
+                downloadMode: kind == "audio" ? "audio" : "auto",
+                videoQuality: quality.toString()
             },
             responseType: "json"
         });
         return req.data;
     } catch (e) {
-        console.log(e);
+        console.log((e as any).toJSON());
         return null;
     }
 }
@@ -44,7 +65,11 @@ export async function downloadMedia(fetchURL: string, kind: "video" | "audio" = 
         throw new Error("Could not fetch media from cobalt!");
     }
     if (media.status == "error") {
-        throw new Error(media.text);
+        throw new Error(media.error?.context.service);
+    }
+
+    if (media.status == "picker") {
+        throw new Error("Invalid media URL!");
     }
 
     try {
@@ -52,16 +77,22 @@ export async function downloadMedia(fetchURL: string, kind: "video" | "audio" = 
             url: media.url,
             responseType: "arraybuffer"
         });
-        const returnData = {
-            filename: "",
-            blob: req.data
-        }
-        if (req.headers["content-disposition"]) {
-            returnData.filename = req.headers["content-disposition"].split("filename=")[1].split(";")[0].slice(1, -1);
-        }
-        return returnData;
+        return {
+            blob: req.data,
+            filename: media.filename ? media.filename : "media." + (kind == "video" ? "mp4" : "mp3")
+        };
     } catch (e) {
-        console.log(e);
+        console.log((e as any).request.data);
         return null;
     }
 }
+
+async function debug() {
+    const url = "https://www.youtube.com/watch?v=2JE8R9KfJwI";
+    const media = await getCobaltStreamURL(url);
+    console.log(media);
+}
+
+(async () => {
+    await debug();
+})();

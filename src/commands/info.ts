@@ -2,7 +2,6 @@ import { IBot } from "@kamuridesu/whatframework/@types/bot";
 import { IMessage } from "@kamuridesu/whatframework/@types/message";
 import { Emojis } from "../utils/emoji.js";
 import { IS_GPT_ENABLED, GPT, Conversation } from "../utils/gpt.js";
-import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import sharp from "sharp";
 import { Database } from "src/utils/db.js";
 import { isAdmin } from "./helpers.js";
@@ -39,9 +38,6 @@ export async function bug(message: IMessage, bot: IBot, args: string[]) {
     return await message.replyText("Bug reportado com sucesso!");
 }
 
-export async function test(bot: IBot, message: IMessage) {
-    await bot.createPoll(message, "test", ["1", "2"]);
-}
 
 export async function donate(message: IMessage) {
     const paymentMethods: string[] = [];
@@ -62,7 +58,7 @@ export async function visionAI(message: IMessage, args: string[]) {
         return await message.replyText("Mensagem não contém imagem!");
     }
     const messageMedia = message.hasQuotedMessage ? JSON.parse(JSON.stringify(message.originalMessage).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : message.originalMessage;
-    const mediaBuffer = await downloadMediaMessage(messageMedia, "buffer", {});
+    const mediaBuffer = (await message.downloadMedia()).media;
     const b64img = (await sharp(mediaBuffer).resize(672, 672).toBuffer()).toString("base64");
     const conv: Conversation[] = [
         {

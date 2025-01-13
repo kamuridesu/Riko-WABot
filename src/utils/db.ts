@@ -30,6 +30,7 @@ export interface Member {
   msgCount: number | null;
   botSilenced: boolean;
   groupSilenced: boolean;
+  warn: number;
 }
 
 export interface AIModelInfo {
@@ -82,11 +83,20 @@ export class Database {
     return result ? result : null;
   }
 
-  async createMember(chatJid: string, userJid: string) {
+  async createMember(chatJid: string, userJid: string): Promise<Member> {
     await this.addChatIfNotExists(chatJid);
     const query = `INSERT INTO member (jid, chatId, points, msgCount) VALUES (?, ?, ?, ?)`;
     await this.connect();
     await this.db?.run(query, [userJid, chatJid, 0, 0]);
+    return {
+      botSilenced: false,
+      chatId: chatJid,
+      groupSilenced: false,
+      jid: userJid,
+      msgCount: 0,
+      points: 0,
+      warn: 0
+    }
   }
 
   async getAllMembers(chatJid: string) {
@@ -142,6 +152,25 @@ export class Database {
     await this.db?.run(query, [silenced, userJid, chatJid]);
   }
 
+  async updateWarningCount(userJid: string, chatJid: string, warn: number) {
+    await this.connect();
+    const query = `UPDATE member SET warn=? WHERE jid = ? AND chatId = ?`;
+    await this.db?.run(query, [warn, userJid, chatJid]);
+  }
+
+  async addToWarningCount(userJid: string, chatJid: string, remove = false)  {
+    let member = await this.getMember(chatJid, userJid);
+    if (!member) {
+      member = await this.createMember(chatJid, userJid);
+    }
+    member.warn = remove ? member.warn - 1 : member.warn + 1;
+    if (member.warn < 0) {
+      member.warn = 0;
+    }
+    await this.updateWarningCount(userJid, chatJid, member.warn);
+    return member;
+  }
+
   async getWelcomeMessage(chatJid: string): Promise<string> {
     const query = `SELECT welcomeMsg from chat WHERE jid = ?`;
     await this.connect();
@@ -170,7 +199,7 @@ export class Database {
     await this.db?.run(query, [0, chatJid]);
   }
 
-  async getBotConversation(chatJid: string) {
+  async isChatBotEnabled(chatJid: string) {
     const query = `SELECT botChat from chat WHERE jid = ?`;
     await this.connect();
     const result = await this.db?.get(query, [chatJid]);
