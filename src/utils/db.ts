@@ -51,6 +51,7 @@ export class Database {
       filename: this.dbFile,
       driver: DBDriver,
     });
+    await this.db.run('PRAGMA journal_mode = WAL;');
   }
 
   async addChat(chatJid: string) {
