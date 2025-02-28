@@ -9,11 +9,15 @@ export let isAnimeEnabled = true;
 if (!fs.existsSync("anime.json")) {
    isAnimeEnabled = false; 
 }
+let AnimeInstance: Anime | undefined;
 
-const AnimeInstance = new Anime(new Telegram());
-(async () => {
-    await AnimeInstance.init();
-})();
+if (!process.env.API_ID || !process.env.API_HASH || !process.env.STRING_SESSION || !process.env.CHAT_ID) {
+    AnimeInstance = new Anime(new Telegram());
+    (async () => {
+        await AnimeInstance.init();
+    })();
+}
+
 
 export function parseAnimeParams(message: IMessage) {
     const messageParts = message.body.split(" ");
@@ -23,5 +27,5 @@ export function parseAnimeParams(message: IMessage) {
 }
 
 export async function DownloadAnime(title: string, episode: number, season: number) {
-    return await AnimeInstance.download(title, episode);
+    return await AnimeInstance?.download(title, episode);
 }

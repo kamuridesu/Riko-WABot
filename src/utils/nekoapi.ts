@@ -50,6 +50,7 @@ export async function getRandomImageFromApi(
     await message.replyMedia(webpImage, "image", "");
     await message.react(Emojis.success);
   } catch (e) {
+    console.log("error fetching from Neko, err is " + e);
     await message.replyText("Algo deu errado!");
     await message.react(Emojis.fail);
   }

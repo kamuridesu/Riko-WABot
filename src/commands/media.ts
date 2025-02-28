@@ -11,7 +11,8 @@ import {
   getRandomImageFromApi,
 } from "../utils/nekoapi.js";
 import { parseMessageToNameAndEpisode } from "../utils/parsers.js";
-import { downloadMedia } from "../utils/cobalt.js";
+import { downloadMedia, Result } from "../utils/cobalt.js";
+import { ytdl } from "../utils/ytdl.js";
 
 export async function download(
   message: IMessage,
@@ -37,8 +38,8 @@ export async function download(
   const regex =
     /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?/gi;
   if (!regex.test(argument)) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Infelizmente o YouTube bloqueou o bot, estou trabalhando para resolver isso mas deve demorar um pouco.");
+    // await message.react(Emojis.fail);
+    // return await message.replyText("Infelizmente o YouTube bloqueou o bot, estou trabalhando para resolver isso mas deve demorar um pouco.");
     try {
       let result: SearchAPIResponse;
       let c = 0;
@@ -63,21 +64,22 @@ export async function download(
     }
   }
 
-  if (videoId.includes("youtube.com") || videoId.includes("youtu.be")) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Infelizmente o YouTube bloqueou o bot, estou trabalhando para resolver isso mas deve demorar um pouco.");
-  }
+  // if (videoId.includes("youtube.com") || videoId.includes("youtu.be")) {
+  //   await message.react(Emojis.fail);
+  //   return await message.replyText("Infelizmente o YouTube bloqueou o bot, estou trabalhando para resolver isso mas deve demorar um pouco.");
+  // }
 
   try {
     await message.react(Emojis.waiting);
-    const video = await downloadMedia(videoId, mediaType);
+    let video: Result | null;
+    if (videoId.includes("youtube.com") || videoId.includes("youtu.be")) {
+      video = await ytdl(videoId, mediaType);
+    } else {
+      video = await downloadMedia(videoId, mediaType);
+    }
     if (video == null) {
       await message.react(Emojis.fail);
       return await message.replyText(`Houve um erro ao baixar ${mediaType}!`);
-    }
-
-    if (mediaType === "audio") {
-      video.blob = await convertToOpus(video.blob);
     }
 
     await message.replyMedia(video.blob as any,
@@ -143,31 +145,32 @@ export async function getImageNekosApi(message: IMessage, args: string[]) {
 }
 
 export async function downloadAnime(message: IMessage, args: string[]) {
-  if (args.length < 1) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Por favor, escolha um anime para baixar!");
-  }
-  const { title, season, episode } = parseMessageToNameAndEpisode(args.join(" "));
-  if (title == null) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Por favor, escolha um anime para baixar!");
-  }
-  if (episode == null) {
-    await message.react(Emojis.fail);
-    return await message.replyText("Por favor, escolha um episódio para baixar! (Ex: /anime Naruto ep=1)");
-  }
-  await message.react(Emojis.waiting);
-  try {
-    const download = await DownloadAnime(title, episode, season);
-    if (download == null) {
-      await message.react(Emojis.fail);
-      return await message.replyText("Erro! Não foi possível baixar o anime!");
-    }
-    await message.replyMedia({media: (download.data as Buffer).buffer as Buffer, messageType: "video", mimeType: "media/mp4", error: undefined}, "video", undefined, download.title);
-    await message.react(Emojis.success);
-  } catch (e) {
-    console.log(e);
-    await message.react(Emojis.fail);
-    return await message.replyText("Erro! Não foi possível baixar o anime!");
-  }
+  return await message.replyText("Ainda em desenvolvimento");
+  // if (args.length < 1) {
+  //   await message.react(Emojis.fail);
+  //   return await message.replyText("Por favor, escolha um anime para baixar!");
+  // }
+  // const { title, season, episode } = parseMessageToNameAndEpisode(args.join(" "));
+  // if (title == null) {
+  //   await message.react(Emojis.fail);
+  //   return await message.replyText("Por favor, escolha um anime para baixar!");
+  // }
+  // if (episode == null) {
+  //   await message.react(Emojis.fail);
+  //   return await message.replyText("Por favor, escolha um episódio para baixar! (Ex: /anime Naruto ep=1)");
+  // }
+  // await message.react(Emojis.waiting);
+  // try {
+  //   const download = await DownloadAnime(title, episode, season);
+  //   if (!download) {
+  //     await message.react(Emojis.fail);
+  //     return await message.replyText("Erro! Não foi possível baixar o anime!");
+  //   }
+  //   await message.replyMedia({media: (download.data as Buffer).buffer as Buffer, messageType: "video", mimeType: "media/mp4", error: undefined}, "video", undefined, download.title);
+  //   await message.react(Emojis.success);
+  // } catch (e) {
+  //   console.log(e);
+  //   await message.react(Emojis.fail);
+  //   return await message.replyText("Erro! Não foi possível baixar o anime!");
+  // }
 }

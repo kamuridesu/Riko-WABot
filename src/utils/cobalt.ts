@@ -93,6 +93,6 @@ async function debug() {
     console.log(media);
 }
 
-(async () => {
-    await debug();
-})();
+// (async () => {
+//     await debug();
+// })();

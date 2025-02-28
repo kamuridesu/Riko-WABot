@@ -5,7 +5,8 @@
   "main": "whatframework",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --outDir modules --skipLibCheck"
+    "build": "tsc --outDir modules --skipLibCheck",
+    "start": "npm run build && npx whatframework"
   },
   "keywords": [],
   "author": "kamuridesu",
