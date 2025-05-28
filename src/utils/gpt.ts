@@ -36,7 +36,7 @@ export let IS_GPT_ENABLED = GPTURL != undefined;
         const response = await axios.head(`http://${GPTURL}/`);
         IS_GPT_ENABLED = response.status === 200;
     } catch (error) {
-        console.error("Error checking GPT status:", error);
+        console.error("Error checking GPT status");
         IS_GPT_ENABLED = false;
     }
 })();

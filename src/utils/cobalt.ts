@@ -86,13 +86,3 @@ export async function downloadMedia(fetchURL: string, kind: "video" | "audio" = 
         return null;
     }
 }
-
-async function debug() {
-    const url = "https://www.youtube.com/watch?v=2JE8R9KfJwI";
-    const media = await getCobaltStreamURL(url);
-    console.log(media);
-}
-
-// (async () => {
-//     await debug();
-// })();

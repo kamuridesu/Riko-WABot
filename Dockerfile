@@ -1,7 +1,7 @@
-ARG BASE_IMAGE=node:18-slim
+ARG BASE_IMAGE=node:20-slim
 
 FROM ${BASE_IMAGE} AS base_git
-RUN apt update && apt install git python3 make gcc build-essential pkg-config -y
+RUN apt update && apt install git python3 python-is-python3 make gcc build-essential pkg-config -y
 
 FROM ${BASE_IMAGE} AS runtime
 RUN apt update && apt install ffmpeg libwebp-dev libopus-dev -y

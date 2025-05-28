@@ -38,15 +38,32 @@ export interface AIModelInfo {
   systemPrompt: string;
 }
 
+let GLOBAL_DB_INSTANCE: DB | undefined = undefined;
+
 export class Database {
-  db: DB | undefined;
   dbFile = path.join("states", "database.sqlite");
 
   constructor() {
-    this.connect().then(() => console.log("DB OK"));
+    // this.connect().then(() => console.log("DB OK"));
+  }
+
+  get db() {
+    if (GLOBAL_DB_INSTANCE != undefined) {
+      return GLOBAL_DB_INSTANCE;
+    }
+  }
+
+  set db(d: DB | undefined) {
+    console.log("instantiating db");
+    GLOBAL_DB_INSTANCE = d
   }
 
   async connect() {
+    if (GLOBAL_DB_INSTANCE != undefined) {
+      return GLOBAL_DB_INSTANCE;
+    }
+    console.log("DB is not instantiated");
+    console.log(new Error().stack);
     this.db = await open({
       filename: this.dbFile,
       driver: DBDriver,
